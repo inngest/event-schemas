@@ -95,6 +95,9 @@ func instances(ctx context.Context) ([]*cue.Instance, error) {
 	return instances, nil
 }
 
+// walkDefinitions walks through each definition within a Cue instance, finds
+// every definition that contains an event schema, then parses the event schema
+// from the Cue type definition.
 func walkDefinitions(v cue.Value) ([]event.Event, error) {
 	events := []event.Event{}
 
@@ -180,6 +183,9 @@ func schema(v cue.Value) (map[string]interface{}, error) {
 	return genned.Components.Schemas.Event, err
 }
 
+// genned represents the generated data from Cue's openapi package.  We care
+// only about extracting the event schema from the generated package;  the
+// rest is discarded.
 type genned struct {
 	Components struct {
 		Schemas struct {
@@ -188,6 +194,7 @@ type genned struct {
 	}
 }
 
+// formatValue formats a given cue value as well-defined cue config.
 func formatValue(input cue.Value) (string, error) {
 	syn := input.Syntax(
 		cue.Docs(true),
