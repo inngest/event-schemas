@@ -13,4 +13,6 @@ package eventdefintions
 		// User information for the author of the event
 		user: [string]: _
 	}
+
+	example?: string
 }

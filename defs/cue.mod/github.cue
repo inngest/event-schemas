@@ -2,9 +2,7 @@ package eventdefintions
 
 pr: #Def & {
 	integration: "github"
-	identifiers: {
-		"email": "The user's email"
-	}
+
 	schema: {
 		name: "github.pull_request"
 
@@ -39,5 +37,7 @@ pr: #Def & {
 			// The commit hash of the tip of the PR after changes
 			after?: string
 		}
+
+		user: {}
 	}
 }

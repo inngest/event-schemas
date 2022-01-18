@@ -141,6 +141,8 @@ func gen(v cue.Value) (*event.Event, error) {
 		return nil, err
 	}
 
+	cuedef, _ := formatValue(sf.Value, cue.Attributes(false))
+
 	name := cueString(sf.Value, "name")
 	ident := map[string]string{}
 	_ = cueField(v, "identifiers").Value.Decode(&ident)
@@ -148,6 +150,8 @@ func gen(v cue.Value) (*event.Event, error) {
 	evt := &event.Event{
 		Name:        name,
 		Schema:      schema,
+		Cue:         cuedef,
+		Example:     cueString(v, "example"),
 		Identifiers: ident,
 	}
 
@@ -159,7 +163,7 @@ func gen(v cue.Value) (*event.Event, error) {
 //
 // This should be called for a single event instance.
 func schema(v cue.Value) (map[string]interface{}, error) {
-	val, err := formatValue(v)
+	val, err := formatValue(v, cue.Attributes(true))
 	if err != nil {
 		return nil, fmt.Errorf("error formatting instance value: %w", err)
 	}
@@ -195,14 +199,15 @@ type genned struct {
 }
 
 // formatValue formats a given cue value as well-defined cue config.
-func formatValue(input cue.Value) (string, error) {
-	syn := input.Syntax(
+func formatValue(input cue.Value, opts ...cue.Option) (string, error) {
+	opts = append([]cue.Option{
 		cue.Docs(true),
-		cue.Attributes(true),
 		cue.Optional(true),
 		cue.Definitions(true),
 		cue.ResolveReferences(true),
-	)
+	}, opts...)
+
+	syn := input.Syntax(opts...)
 	out, err := format.Node(
 		syn,
 		format.TabIndent(false),
