@@ -60,6 +60,10 @@ func TestFromJSON(t *testing.T) {
 		}
 
 		require.True(t, matches, "generated types do not match")
+
+		// Ensure B also subsumes A so that they're the same.
+		matches = instB.Value().Subsumes(instA.Value())
+		require.True(t, matches, "generated types do not match")
 	}
 }
 
