@@ -18,3 +18,13 @@ cue import jsonschema ./path/to/schema.json -o -
 
 This will print the cue type definitions to stdout.  You can then take these definitions and add
 them to ./defs/${service.cue} to document events.
+
+## Go package
+
+The event types are importable using the following package:
+
+```
+go get github.com/inngest/event-schemas/events
+```
+
+You can reference all supported events via `events.Events`.
