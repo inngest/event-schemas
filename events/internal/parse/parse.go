@@ -12,8 +12,8 @@ import (
 	"cuelang.org/go/cue/format"
 	"cuelang.org/go/cue/load"
 	"cuelang.org/go/encoding/openapi"
-	"github.com/inngest/eventschema/defs"
-	"github.com/inngest/eventschema/events"
+	"github.com/inngest/event-schemas/defs"
+	"github.com/inngest/event-schemas/events"
 )
 
 var (

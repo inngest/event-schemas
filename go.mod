@@ -1,4 +1,4 @@
-module github.com/inngest/eventschema
+module github.com/inngest/event-schemas
 
 go 1.17
 

@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/inngest/eventschema/events/internal/parse"
+	"github.com/inngest/event-schemas/events/internal/parse"
 )
 
 func main() {
