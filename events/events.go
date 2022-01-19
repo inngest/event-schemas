@@ -4,8 +4,11 @@ package events
 
 // Event represents a single event payload.
 type Event struct {
+	// Name is the unique full name of the event.
 	Name string `json:"name"`
 
+	// Version represents the version of this event.  This allows for changing
+	// event schemas over time.
 	Version string `json:"version"`
 
 	// Cue is the cue type definition of the event, without annotations.
