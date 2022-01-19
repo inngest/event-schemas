@@ -11,13 +11,10 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/inngest/eventschema/events"
 	"github.com/inngest/eventschema/events/internal/parse"
 )
 
 func main() {
-	fmt.Printf("%#v\n", events.Events)
-
 	if err := generateJSON(); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

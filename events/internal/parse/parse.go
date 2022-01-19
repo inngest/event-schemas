@@ -150,6 +150,7 @@ func gen(v cue.Value) (*events.Event, error) {
 		Schema:  schema,
 		Cue:     cuedef,
 		Example: cueString(v, "example"),
+		Version: cueString(sf.Value, "v"),
 	}
 
 	return evt, nil
