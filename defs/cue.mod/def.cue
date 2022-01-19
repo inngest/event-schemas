@@ -1,9 +1,8 @@
 package eventdefintions
 
 #Def: {
-	// integration defines the name of the integration that generates this
-	// event.
-	integration?: string
+	// A short description of the event.
+	description?: string
 
 	schema: {
 		// The unique name of the event
@@ -12,6 +11,9 @@ package eventdefintions
 		data: [string]: _
 		// User information for the author of the event
 		user: [string]: _
+
+		// An optional event version
+		v?: string
 	}
 
 	example?: string

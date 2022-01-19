@@ -1,10 +1,11 @@
 package eventdefintions
 
 pr: #Def & {
-	integration: "github"
+
+	description: "Created when pull requests are created or modified"
 
 	schema: {
-		name: "github.pull_request"
+		name: "github/pull_request"
 
 		data: {
 			action: "opened" | "closed" | "merged" | "review_requested" | "synchronize" | "edited"
@@ -38,6 +39,7 @@ pr: #Def & {
 			after?: string
 		}
 
+		// There is no user information available within this event.
 		user: {}
 	}
 }

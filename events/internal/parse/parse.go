@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path"
+	"strings"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/format"
@@ -14,6 +15,10 @@ import (
 	"cuelang.org/go/encoding/openapi"
 	"github.com/inngest/event-schemas/defs"
 	"github.com/inngest/event-schemas/events"
+)
+
+const (
+	serviceSeparator = "/"
 )
 
 var (
@@ -142,15 +147,22 @@ func gen(v cue.Value) (*events.Event, error) {
 	}
 
 	cuedef, _ := formatValue(sf.Value, cue.Attributes(false))
-
 	name := cueString(sf.Value, "name")
 
+	var service string
+	parts := strings.SplitN(name, serviceSeparator, 2)
+	if len(parts) == 2 {
+		service = parts[0]
+	}
+
 	evt := &events.Event{
-		Name:    name,
-		Schema:  schema,
-		Cue:     cuedef,
-		Example: cueString(v, "example"),
-		Version: cueString(sf.Value, "v"),
+		Name:        name,
+		Service:     service,
+		Description: cueString(v, "description"),
+		Schema:      schema,
+		Cue:         cuedef,
+		Example:     cueString(v, "example"),
+		Version:     cueString(sf.Value, "v"),
 	}
 
 	return evt, nil
