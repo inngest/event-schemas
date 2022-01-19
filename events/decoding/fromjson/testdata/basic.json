@@ -1,0 +1,16 @@
+{
+  "line_1": "1 Some Road",
+  "line_2": null,
+  "city": "Megopalis",
+  "state": "AA",
+  "zip": "01234",
+  "country_code": "US",
+  "int": 1,
+  "float": 1.25,
+  "intslice": [1, 2, 10],
+  "strslice": ["a", "b", "c"],
+  "mixslice": ["a", 1],
+  "map": {
+    "inner": true
+  }
+}
