@@ -170,7 +170,5 @@ func kind(v interface{}) cue.Kind {
 		return cue.NullKind | cue.TopKind
 	}
 
-	// If this is a slice, we need to determine what this is
-	// a slice of.
 	return cue.TopKind
 }
