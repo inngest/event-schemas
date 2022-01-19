@@ -1,8 +1,9 @@
-package event
+//go:generate go run ./internal/generate.go
+
+package events
 
 type Event struct {
-	Name        string            `json:"name"`
-	Identifiers map[string]string `json:"identifiers"`
+	Name string `json:"name"`
 
 	// Cue is the cue type definition of the event, without annotations.
 	Cue string `json:"cue"`

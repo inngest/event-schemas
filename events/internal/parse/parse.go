@@ -13,7 +13,7 @@ import (
 	"cuelang.org/go/cue/load"
 	"cuelang.org/go/encoding/openapi"
 	"github.com/inngest/eventschema/defs"
-	"github.com/inngest/eventschema/pkg/event"
+	"github.com/inngest/eventschema/events"
 )
 
 var (
@@ -25,13 +25,13 @@ var (
 
 // Parse evaluates all embeded cue files within defs/cue.mod, returning parsed event
 // information from the cue types.
-func Parse(ctx context.Context) ([]event.Event, error) {
+func Parse(ctx context.Context) ([]events.Event, error) {
 	insts, err := instances(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	events := []event.Event{}
+	events := []events.Event{}
 
 	for _, i := range insts {
 		// Iterate through each value within the instance (file) and parse
@@ -98,8 +98,8 @@ func instances(ctx context.Context) ([]*cue.Instance, error) {
 // walkDefinitions walks through each definition within a Cue instance, finds
 // every definition that contains an event schema, then parses the event schema
 // from the Cue type definition.
-func walkDefinitions(v cue.Value) ([]event.Event, error) {
-	events := []event.Event{}
+func walkDefinitions(v cue.Value) ([]events.Event, error) {
+	events := []events.Event{}
 
 	it, err := v.Fields()
 	if err != nil {
@@ -130,7 +130,7 @@ func walkDefinitions(v cue.Value) ([]event.Event, error) {
 }
 
 // gen generates a new event given the event definition as a cue.Value.
-func gen(v cue.Value) (*event.Event, error) {
+func gen(v cue.Value) (*events.Event, error) {
 	// If the value has a field "schema", it's part of our definition.
 	sf, err := v.LookupField("schema")
 	if err != nil {
@@ -144,15 +144,12 @@ func gen(v cue.Value) (*event.Event, error) {
 	cuedef, _ := formatValue(sf.Value, cue.Attributes(false))
 
 	name := cueString(sf.Value, "name")
-	ident := map[string]string{}
-	_ = cueField(v, "identifiers").Value.Decode(&ident)
 
-	evt := &event.Event{
-		Name:        name,
-		Schema:      schema,
-		Cue:         cuedef,
-		Example:     cueString(v, "example"),
-		Identifiers: ident,
+	evt := &events.Event{
+		Name:    name,
+		Schema:  schema,
+		Cue:     cuedef,
+		Example: cueString(v, "example"),
 	}
 
 	return evt, nil
