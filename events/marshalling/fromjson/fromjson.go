@@ -12,10 +12,15 @@ import (
 
 // FromJSON takes a JSON map and generates a CUE type which validates the given
 // values.  Because this works backwards from values, it will never generate
-// constraints and will likely contain errors with eg. null values.
-//
-// However, the cue type that it generates is a good starting point for customizing
+// constraints and will likely contain errors with eg. null values. However,
+// the cue type that it generates is a good starting point for customizing
 // and creating a properly defined type for the value.
+//
+// This produces a struct with no top-level identifier:
+//
+// {
+//    name: string
+// }
 //
 // NOTE: Because maps are unordered in Go, the resulting type will have fields
 // returned in no specific order.  The type will, however, match the iteration

@@ -3,7 +3,6 @@ package parse
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/fs"
 	"path"
@@ -15,6 +14,7 @@ import (
 	"cuelang.org/go/encoding/openapi"
 	"github.com/inngest/event-schemas/defs"
 	"github.com/inngest/event-schemas/events"
+	"github.com/inngest/event-schemas/events/marshalling/jsonschema"
 )
 
 const (
@@ -141,7 +141,8 @@ func gen(v cue.Value) (*events.Event, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to find schema field")
 	}
-	schema, err := schema(sf.Value)
+
+	schema, err := jsonschema.MarshalCueValue(sf.Value)
 	if err != nil {
 		return nil, err
 	}
@@ -167,6 +168,8 @@ func gen(v cue.Value) (*events.Event, error) {
 
 	return evt, nil
 }
+
+/*
 
 // schema generates an openAPI schema for the given schema field of an event,
 // utilizing Cue's OpenAPI integration package.
@@ -207,6 +210,7 @@ type genned struct {
 		}
 	}
 }
+*/
 
 // formatValue formats a given cue value as well-defined cue config.
 func formatValue(input cue.Value, opts ...cue.Option) (string, error) {
