@@ -3,6 +3,7 @@ package typescript
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/ast"
@@ -39,6 +40,14 @@ func MarshalCueValue(v cue.Value) (string, error) {
 	exprs := []*Expr{}
 
 	for it.Next() {
+		if len(exprs) > 0 {
+			// Add two newlines between each field.
+			exprs = append(exprs, []*Expr{
+				{Data: Lit{Value: "\n"}},
+				{Data: Lit{Value: "\n"}},
+			}...)
+		}
+
 		result, err := generateExprs(context.Background(), it.Label(), it.Value())
 		if err != nil {
 			return "", err
@@ -46,9 +55,10 @@ func MarshalCueValue(v cue.Value) (string, error) {
 		exprs = append(exprs, result...)
 	}
 
+	// Add a final newline to terminate the file.
+	exprs = append(exprs, []*Expr{{Data: Lit{Value: "\n"}}}...)
+
 	str, err := FormatAST(exprs...)
-	fmt.Println("---")
-	fmt.Println(str)
 	return str, err
 }
 
@@ -56,17 +66,29 @@ func MarshalCueValue(v cue.Value) (string, error) {
 // differs to the 'generateAST' function as it wraps the created AST within an Expr,
 // representing a complete expression terminating with a semicolon.
 func generateExprs(ctx context.Context, label string, v cue.Value) ([]*Expr, error) {
-	ast, err := generateAST(ctx, label, v)
+	label = strings.Title(strings.ToLower(label))
+
+	exprs, ast, err := generateAST(ctx, label, v)
 	if err != nil {
 		return nil, err
 	}
 
-	exprs := make([]*Expr, len(ast))
-	for n, a := range ast {
+	for _, a := range ast {
 		// Wrap the AST in an expression, indicating that the AST is a
 		// fully defined typescript expression.
 		if _, ok := a.(Local); ok {
-			exprs[n] = &Expr{Data: a}
+			exprs = append(exprs, &Expr{Data: a})
+			continue
+		}
+
+		if enum, ok := a.(Enum); ok {
+			// Enums define their own top-level Local AST as they create
+			// more than one export.
+			enumExprs, err := enum.AST()
+			if err != nil {
+				return nil, err
+			}
+			exprs = append(exprs, enumExprs...)
 			continue
 		}
 
@@ -77,65 +99,93 @@ func generateExprs(ctx context.Context, label string, v cue.Value) ([]*Expr, err
 			kind = LocalInterface
 		}
 
-		exprs[n] = &Expr{
+		exprs = append(exprs, &Expr{
 			Data: Local{
 				Kind:     kind,
 				Name:     label,
 				IsExport: true,
 				Value:    a,
 			},
-		}
+		})
 	}
 
 	return exprs, nil
 }
 
-// generateAST creates typescript AST for the given cue values.
-func generateAST(ctx context.Context, label string, v cue.Value) ([]AstKind, error) {
+// generateAST creates typescript AST for the given cue values
+//
+// If the value contains a field of enums, this may generate top-level expressions
+// to add to the generated typescript file.
+func generateAST(ctx context.Context, label string, v cue.Value) ([]*Expr, []AstKind, error) {
 	// We have the cue's value, although this may represent many things.
 	// Notably, v.IncompleteKind() returns cue.StringKind even if this field
 	// represents a static string, a string type, or an enum of strings.
 	//
 	// In order to properly generate Typescript AST for the value we need to
 	// walk Cue's AST.
-	fmt.Printf("%s: %T\n", label, v.Syntax())
+	// fmt.Printf("%s: %T\n", label, v.Syntax())
 
 	switch v.IncompleteKind() {
 	case cue.StructKind:
-		ast, err := generateStructBinding(ctx, v)
+		exprs, ast, err := generateStructBinding(ctx, v)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		return ast, nil
+		return exprs, ast, nil
 	case cue.ListKind:
 		// TODO: HANDLE LISTS
-		return nil, nil
+		return nil, nil, nil
 	default:
 		syn := v.Syntax(cue.All())
 		switch ident := syn.(type) {
 		case *ast.BinaryExpr:
 			// This could be an enum, a basic lit with a constraint, or a type Ident
 			// with a constraint.
-			//
-			// XXX: Add constraints as comments above the identifier.
-			// XXX: We could also generate functions which validate constraints
-			// with an aexpression
-			return generateEnum(ctx, label, v)
+			op, _ := v.Expr()
+			if op == cue.OrOp {
+				// This is an enum.  We're combining > 1 field using
+				// the Or operator.
+				ast, err := generateEnum(ctx, label, v)
+				return nil, ast, err
+			}
+
+			if op == cue.AndOp {
+				// Although it's possible to combine two structs via the AndOp,
+				// those are handled within the IncompleteKind() check above.
+				//
+				// Because of this we can guarantee that this is a constrained
+				// type check.
+				ast, err := generateConstrainedIdent(ctx, label, v)
+				return nil, ast, err
+			}
 		case *ast.BasicLit:
 			// This is a const.
 			scalar, err := generateScalar(ctx, label, v)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-			return []AstKind{scalar}, nil
+			return nil, []AstKind{scalar}, nil
 		case *ast.Ident:
-			return []AstKind{
+			return nil, []AstKind{
 				Type{Value: identToTS(ident.Name)},
 			}, nil
 		default:
-			return nil, fmt.Errorf("unhandled cue type: %T", ident)
+			return nil, nil, fmt.Errorf("unhandled cue ident: %T", ident)
 		}
 	}
+	return nil, nil, fmt.Errorf("unhandled cue type: %v", v.IncompleteKind())
+}
+
+func generateConstrainedIdent(ctx context.Context, label string, v cue.Value) ([]AstKind, error) {
+	// All types being constrained should share the same heirarchy - eg. uint refers to an
+	// int and a number.  In Typescript we don't really care about refined types and can
+	// use the first value, as typescript only uses "number" or "string" etc..
+	//
+	// XXX: Add constraints as comments above the identifier. We could also generate
+	// functions which validate constraints with an aexpression
+	_, vals := v.Expr()
+	_, ast, err := generateAST(ctx, label, vals[0])
+	return ast, err
 }
 
 // generateLocal returns a scalar identifier, such as a top-level const
@@ -149,10 +199,27 @@ func generateScalar(ctx context.Context, label string, v cue.Value) (AstKind, er
 }
 
 func generateEnum(ctx context.Context, label string, v cue.Value) ([]AstKind, error) {
-	// We know that v is of type Expr, and it contains a BinaryExpr.
-	_, _ = v.Expr()
-	fmt.Println("ENUM", v)
-	return nil, nil
+	label = strings.Title(strings.ToLower(label))
+
+	_, vals := v.Expr()
+	members := make([]AstKind, len(vals))
+
+	// Generate AST representing the value of each member in the enum.
+	for n, val := range vals {
+		_, ast, err := generateAST(ctx, label, val)
+		if err != nil {
+			return nil, fmt.Errorf("error generating ast for enum val: %w", err)
+		}
+		if len(ast) > 1 {
+			return nil, fmt.Errorf("invalid ast generated for enum val: %v", ast)
+		}
+		members[n] = ast[0]
+	}
+
+	return []AstKind{Enum{
+		Name:    label,
+		Members: members,
+	}}, nil
 }
 
 // generateStructBinding returns a binding representing a TypeScript object
@@ -161,29 +228,56 @@ func generateEnum(ctx context.Context, label string, v cue.Value) ([]AstKind, er
 // It does not wrap this within a Local as this function is used within top-level
 // and nested structs;  nested structs are the Value of a KeyValue whereas
 // top-level identifiers are values of a Local.
-func generateStructBinding(ctx context.Context, v cue.Value) ([]AstKind, error) {
+func generateStructBinding(ctx context.Context, v cue.Value) ([]*Expr, []AstKind, error) {
 	it, err := v.Fields(cue.All())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	// Referencing another field.
-	// p, r := v.Reference()
-	//
-	// A struct may contain enum definions.  Within typescript we want to pull
-	// those enum definitions to top-level types.  This means that we must return
-	// multiple top-level AST expressions.
+	expr := []*Expr{}
 
-	ast := []AstKind{}
+	members := []AstKind{}
 	for it.Next() {
 		if it.IsHidden() {
 			continue
 		}
 
 		// Create the raw AST for each field's value
-		created, err := generateAST(withIncreasedIndentLevel(ctx), it.Label(), it.Value())
+		newExpr, created, err := generateAST(withIncreasedIndentLevel(ctx), it.Label(), it.Value())
+		expr = append(expr, newExpr...)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
+		}
+
+		if len(created) == 0 {
+			continue
+		}
+
+		// We may have generated top-level local definitions, which we should pull out
+		// to the AST context and not use as a key-value.
+		if local, ok := created[0].(Local); ok {
+			// Add the fields to the top-level object being created.
+			expr = append(expr, &Expr{Data: created[0]})
+			// And add a reference to the type as the key value pair.
+			created[0] = Type{Value: local.Name}
+		}
+
+		// A struct may contain enum definions.  Within typescript we want to pull
+		// those enum definitions to top-level types.  This means that we must return
+		// multiple top-level AST expressions.
+		if enum, ok := created[0].(Enum); ok {
+			enumAst, err := enum.AST()
+			if err != nil {
+				return nil, nil, err
+			}
+			expr = append(expr, enumAst...)
+			// Add two newlines between each enum and struct visually.
+			expr = append(expr, []*Expr{
+				{Data: Lit{Value: "\n"}},
+				{Data: Lit{Value: "\n"}},
+			}...)
+			// Use the enum name as the key's value.
+			created[0] = Type{Value: enum.Name}
 		}
 
 		// Wrap the AST value within a KeyValue.
@@ -196,16 +290,20 @@ func generateStructBinding(ctx context.Context, v cue.Value) ([]AstKind, error) 
 			}
 		}
 
-		ast = append(ast, wrapped...)
+		members = append(members, wrapped...)
 	}
 
-	return []AstKind{Binding{
+	// Add the struct to the generated AST fields.
+	ast := []AstKind{Binding{
 		Kind:        BindingType,
-		Members:     ast,
+		Members:     members,
 		IndentLevel: indentLevel(ctx),
-	}}, nil
+	}}
+
+	return expr, ast, nil
 }
 
+// identToTS returns Typescript type names from a given cue type name.
 func identToTS(name string) string {
 	switch name {
 	case "bool":
@@ -230,6 +328,8 @@ func indentLevel(ctx context.Context) int {
 	return indent
 }
 
+// withIncreasedIndentLevel increases the indent level in the given context,
+// returning a new context with the updated indent level.
 func withIncreasedIndentLevel(ctx context.Context) context.Context {
 	level := indentLevel(ctx) + 1
 	return context.WithValue(ctx, ctxIndentLevel, level)
