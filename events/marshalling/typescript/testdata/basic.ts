@@ -35,4 +35,6 @@ export interface Event {
     with: string;
     included: boolean;
   };
+  numberList: Array<number>;
+  fixedNumber: Array<1 | 2 | 3.14159>;
 };

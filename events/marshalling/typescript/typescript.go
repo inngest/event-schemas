@@ -123,7 +123,6 @@ func generateAST(ctx context.Context, label string, v cue.Value) ([]*Expr, []Ast
 	//
 	// In order to properly generate Typescript AST for the value we need to
 	// walk Cue's AST.
-	// fmt.Printf("%s: %T\n", label, v.Syntax())
 
 	switch v.IncompleteKind() {
 	case cue.StructKind:
@@ -133,8 +132,8 @@ func generateAST(ctx context.Context, label string, v cue.Value) ([]*Expr, []Ast
 		}
 		return exprs, ast, nil
 	case cue.ListKind:
-		// TODO: HANDLE LISTS
-		return nil, nil, nil
+		ast, err := generateArray(ctx, label, v)
+		return nil, ast, err
 	default:
 		syn := v.Syntax(cue.All())
 		switch ident := syn.(type) {
@@ -198,6 +197,85 @@ func generateScalar(ctx context.Context, label string, v cue.Value) (AstKind, er
 	return Scalar{Value: i}, nil
 }
 
+// generateArray returns an array.  This will always produce a type definition, even if all
+// values in the cue list are basic literal values.
+func generateArray(ctx context.Context, label string, v cue.Value) ([]AstKind, error) {
+	members := []AstKind{}
+
+	// Walk the iterator for all basic values first.
+	iter, err := v.List()
+	if err != nil {
+		return nil, fmt.Errorf("invalid value generating array: %w", err)
+	}
+
+	for iter.Next() {
+		_, ast, err := generateAST(ctx, iter.Label(), iter.Value())
+		if err != nil {
+			return nil, err
+		}
+		members = append(members, ast...)
+	}
+
+	// We can't use v.List() to create an iterator as iterators don't return types:
+	// they only work with concrete values.
+	//
+	// Instead, take the Cue AST and walk it to determine the elements in the list,
+	// and create TS AST from them.
+	listLit, ok := v.Syntax(cue.All()).(*ast.ListLit)
+	if !ok {
+		return nil, fmt.Errorf("unknown list ast type: %T", v.Syntax(cue.All()))
+	}
+
+	if len(listLit.Elts) == 0 {
+		return []AstKind{
+			Binding{
+				Kind: BindingTypedArray,
+			},
+		}, nil
+	}
+
+	elts := listLit.Elts
+	if ellipsis, ok := listLit.Elts[0].(*ast.Ellipsis); ok {
+		elts = []ast.Expr{ellipsis.Type}
+	}
+
+	// We only want the same type mapped once in an array. Typescript uses
+	// the basic "number" type whereas cue has "int" and "float";  there's a chance
+	// that we end up duplicating TS type names.
+	mappedTypes := map[string]struct{}{}
+
+	for len(elts) > 0 {
+		elt := elts[0]
+		elts = elts[1:]
+
+		switch a := elt.(type) {
+		case *ast.BinaryExpr:
+			elts = append(elts, a.X)
+			elts = append(elts, a.Y)
+			continue
+		case *ast.BasicLit:
+			// Basic value  This would already have been covered in the
+			// iterator case above.
+		case *ast.Ident:
+			typeName := identToTS(a.Name)
+			if _, ok := mappedTypes[typeName]; ok {
+				continue
+			}
+			members = append(members, Type{typeName})
+			mappedTypes[typeName] = struct{}{}
+		}
+	}
+
+	binding := Binding{
+		Kind:    BindingTypedArray,
+		Members: members,
+	}
+
+	return []AstKind{binding}, nil
+}
+
+// generateEnum creates an enum definition which should be epanded to its
+// full Expr AST for a given value.
 func generateEnum(ctx context.Context, label string, v cue.Value) ([]AstKind, error) {
 	label = strings.Title(strings.ToLower(label))
 
