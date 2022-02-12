@@ -31,6 +31,7 @@ func TestAST(t *testing.T) {
 						Value: 1.1,
 					},
 				},
+				{Data: Lit{Value: "\n"}},
 				{
 
 					Data: Scalar{
@@ -38,7 +39,7 @@ func TestAST(t *testing.T) {
 					},
 				},
 			},
-			Expected: "1.1;\n\ntrue;",
+			Expected: "1.1;\ntrue;",
 		},
 		// Local const definitions
 		{
@@ -51,6 +52,7 @@ func TestAST(t *testing.T) {
 						Value: Scalar{"Typie McTypieFace"},
 					},
 				},
+				{Data: Lit{Value: "\n"}},
 				{
 
 					Data: Local{
@@ -61,7 +63,6 @@ func TestAST(t *testing.T) {
 				},
 			},
 			Expected: `const name = "Typie McTypieFace";
-
 const isEnabled = true;`,
 		},
 		{
@@ -82,6 +83,7 @@ const isEnabled = true;`,
 						},
 					},
 				},
+				{Data: Lit{Value: "\n"}},
 				{
 
 					Data: Local{
@@ -98,7 +100,6 @@ const isEnabled = true;`,
 				},
 			},
 			Expected: `const numbers: number = [1, 2, 3];
-
 const strings = ["lol", "wut"];`,
 		},
 		{
@@ -141,6 +142,7 @@ const strings = ["lol", "wut"];`,
 						Value:    Type{"string"},
 					},
 				},
+				{Data: Lit{Value: "\n"}},
 				{
 
 					Data: Local{
@@ -152,7 +154,6 @@ const strings = ["lol", "wut"];`,
 				},
 			},
 			Expected: `export type Name = string;
-
 const myName: Name = "coder";`,
 		},
 		// Interface type definitions
@@ -207,6 +208,26 @@ const myName: Name = "coder";`,
   };
 };`,
 		},
+		// Value enums
+		{
+			Expr: []*Expr{
+				{
+
+					Data: Enum{
+						Name: "Status",
+						Members: []AstKind{
+							Scalar{"push"},
+							Scalar{"pull"},
+						},
+					},
+				},
+			},
+			Expected: `export const Status = {
+  PUSH: "push",
+  PULL: "pull",
+} as const;
+export type Status = typeof Status[keyof typeof Status];`,
+		},
 		// Type enum expressions
 		{
 			Expr: []*Expr{
@@ -221,7 +242,7 @@ const myName: Name = "coder";`,
 					},
 				},
 			},
-			Expected: `export const Status = string | boolean;`,
+			Expected: `export type Status = string | boolean;`,
 		},
 		// Object enums
 		{
@@ -253,7 +274,7 @@ const myName: Name = "coder";`,
 					},
 				},
 			},
-			Expected: `export const Status = {
+			Expected: `export type Status = {
   name: string;
 } | {
   email: string;

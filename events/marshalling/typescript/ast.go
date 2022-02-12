@@ -15,20 +15,17 @@ var (
 	_ AstKind = Local{}
 	_ AstKind = Binding{}
 
+	constType = "const"
+
 	alphanumeric = regexp.MustCompile(`^\w+$`)
 )
 
 func FormatAST(expr ...*Expr) (string, error) {
 	str := strings.Builder{}
 
-	for n, e := range expr {
+	for _, e := range expr {
 		if _, err := str.WriteString(e.String()); err != nil {
 			return "", err
-		}
-		if n < len(expr)-1 {
-			if _, err := str.WriteString("\n\n"); err != nil {
-				return "", err
-			}
 		}
 	}
 
@@ -36,11 +33,19 @@ func FormatAST(expr ...*Expr) (string, error) {
 }
 
 // Expr represents a single TS expression, such as a type defintion.
+//
+// TODO (tonyhb): refactor.  We probably dont need Expr wrappers, and it makes
+// typescript code gen function signatures a little ugly (see generateStructBinding).
+// We can probably work with Local being the single top-level identifier.
 type Expr struct {
 	Data AstKind
 }
 
 func (e Expr) String() string {
+	if _, ok := e.Data.(Lit); ok {
+		return e.Data.String()
+	}
+	// This is code;  always add a semicolon after each expression
 	return e.Data.String() + ";"
 }
 
@@ -50,12 +55,20 @@ type AstKind interface {
 	String() string
 }
 
+func (Lit) isAST()      {}
 func (Local) isAST()    {}
 func (Binding) isAST()  {}
 func (Enum) isAST()     {}
 func (Scalar) isAST()   {}
 func (Type) isAST()     {}
 func (KeyValue) isAST() {}
+
+// Lit represents literal text, such as newlines, comments, spaces, etc.
+type Lit struct {
+	Value string
+}
+
+func (l Lit) String() string { return l.Value }
 
 // Scalar represents a scalar value such as a string, number, boolean,
 // etc.
@@ -120,6 +133,10 @@ type Local struct {
 	// Value is the value that this identifier refers to.  This could be
 	// a scalar, a type, a binding, etc.
 	Value AstKind
+
+	// AsType records the "as T" suffix for an identifier, eg:
+	// "const Foo = 1 as int;
+	AsType *string
 }
 
 func (l Local) String() string {
@@ -136,7 +153,11 @@ func (l Local) String() string {
 			def = fmt.Sprintf("%s %s: %s = %s", l.Kind, name, *l.Type, l.Value)
 		}
 	case LocalInterface:
-		def = fmt.Sprintf("interface %s %s", name, l.Value.String())
+		def = fmt.Sprintf("interface %s %s", name, l.Value)
+	}
+
+	if l.AsType != nil {
+		def = fmt.Sprintf("%s as %s", def, *l.AsType)
 	}
 
 	if l.IsExport {
@@ -168,7 +189,6 @@ type Binding struct {
 }
 
 func (b Binding) String() string {
-
 	switch b.Kind {
 	case BindingArray:
 		if len(b.Members) == 0 {
@@ -193,6 +213,10 @@ func (b Binding) String() string {
 
 		str := strings.Builder{}
 		for n, v := range b.Members {
+			if v == nil {
+				continue
+			}
+
 			_, _ = str.WriteString(v.String())
 			if n < len(b.Members)-1 {
 				_, _ = str.WriteString(" | ")
@@ -286,7 +310,7 @@ func (e Enum) AST() ([]*Expr, error) {
 			return []*Expr{
 				{
 					Data: Local{
-						Kind:     LocalConst,
+						Kind:     LocalType,
 						Name:     e.Name,
 						IsExport: true,
 						Value: Binding{
@@ -307,6 +331,7 @@ func (e Enum) AST() ([]*Expr, error) {
 				Kind:     LocalConst,
 				Name:     e.Name,
 				IsExport: true,
+				AsType:   &constType,
 				Value: Binding{
 					Kind: BindingObject,
 					// Add all members of the enum as an object.
@@ -314,6 +339,7 @@ func (e Enum) AST() ([]*Expr, error) {
 				},
 			},
 		},
+		{Data: Lit{Value: "\n"}},
 		{
 			Data: Local{
 				Kind:     LocalType,
@@ -333,12 +359,8 @@ func (e Enum) String() string {
 		return err.Error()
 	}
 	str := strings.Builder{}
-	for n, item := range ast {
+	for _, item := range ast {
 		str.WriteString(item.String())
-
-		if n < len(ast)-1 {
-			str.WriteString("\n")
-		}
 	}
 	return strings.TrimSuffix(str.String(), ";")
 }
