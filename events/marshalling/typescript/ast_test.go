@@ -102,6 +102,28 @@ const isEnabled = true;`,
 			Expected: `const numbers: number = [1, 2, 3];
 const strings = ["lol", "wut"];`,
 		},
+		// Typed arrays
+		{
+			Expr: []*Expr{
+				{
+
+					Data: Local{
+						Kind: LocalType,
+						Name: "Contents",
+						Value: Binding{
+							Kind: BindingTypedArray,
+							Members: []AstKind{
+								Type{"string"},
+								Type{"number"},
+								Scalar{3.141},
+							},
+						},
+					},
+				},
+			},
+			Expected: `type Contents = Array<string | number | 3.141>;`,
+		},
+		// Objects
 		{
 			Expr: []*Expr{
 				{

@@ -171,9 +171,43 @@ func (l Local) String() string {
 type BindingKind uint8
 
 const (
+	// BindingArray represents a plain ol' javascript array with contents:
+	// [1, 2, 3, 4].
 	BindingArray BindingKind = iota
+	// BindingTypedArray represents a TS Array definition: Array<T>.  When used
+	// within a Binding, any members are automatically assumed to be bound using
+	// a disjunction.  However, the Members field can also contain a single
+	// BindingDisjunction with many values - it does the same thing.
+	//
+	// Examples:
+	//
+	// 	Binding{
+	// 		Kind: BindingTypedArray,
+	// 		Members: []AstKind{
+	// 			Type{"string"}, // automatically a disjunction.
+	// 			Type{"number"},
+	// 	     },
+	// 	}
+	//
+	// is equivalent to:
+	//
+	// 	Binding{
+	// 		Kind: BindingTypedArray,
+	// 		Members: []AstKind{
+	//			Binding{
+	//				Kind: BindingDisjunction,
+	//				Members: []AstKind{
+	// 					Type{"string"},
+	// 					Type{"number"},
+	// 	     			},
+	// 	     		},
+	// 	     	},
+	// 	}
+	//
+	BindingTypedArray
+	// BindingObject represents a pojo.
 	BindingObject
-	// Type represents an object used for a type.  These use
+	// BindingType represents an object used for a type.  These use
 	// semi-colons as their field terminators.
 	BindingType
 	// BindingDisjunction represents an ADT enum - values combined
@@ -204,6 +238,22 @@ func (b Binding) String() string {
 			}
 		}
 		_, _ = str.WriteString("]")
+		return str.String()
+
+	case BindingTypedArray:
+		if len(b.Members) == 0 {
+			return "Array<>"
+		}
+
+		str := strings.Builder{}
+		_, _ = str.WriteString("Array<")
+		for n, v := range b.Members {
+			_, _ = str.WriteString(v.String())
+			if n < len(b.Members)-1 {
+				_, _ = str.WriteString(" | ")
+			}
+		}
+		_, _ = str.WriteString(">")
 		return str.String()
 
 	case BindingDisjunction:
