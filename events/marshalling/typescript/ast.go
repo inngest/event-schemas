@@ -126,16 +126,17 @@ func (l Local) String() string {
 	var def string
 
 	// TODO: If this is a type or an interface, capitalize the name.
+	name := strings.ReplaceAll(l.Name, "#", "")
+
 	switch l.Kind {
 	case LocalConst, LocalType:
 		if l.Type == nil {
-			def = fmt.Sprintf("%s %s = %s", l.Kind, l.Name, l.Value)
+			def = fmt.Sprintf("%s %s = %s", l.Kind, name, l.Value)
 		} else {
-			def = fmt.Sprintf("%s %s: %s = %s", l.Kind, l.Name, *l.Type, l.Value)
+			def = fmt.Sprintf("%s %s: %s = %s", l.Kind, name, *l.Type, l.Value)
 		}
 	case LocalInterface:
-		// TODO: Create interface
-		def = fmt.Sprintf("interface %s %s", l.Name, l.Value.String())
+		def = fmt.Sprintf("interface %s %s", name, l.Value.String())
 	}
 
 	if l.IsExport {
