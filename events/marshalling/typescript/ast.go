@@ -326,7 +326,6 @@ func (kv KeyValue) String() string {
 		key = strconv.Quote(key)
 	}
 
-	// TODO: Does this key have non-alpha characters?
 	if kv.Optional {
 		return fmt.Sprintf("%s?: %s", key, kv.Value.String())
 	}
@@ -338,7 +337,8 @@ func (kv KeyValue) String() string {
 // fun to use;  it's recommended by many to create an Object containing the enum
 // values, then use `typeof EnumName[keyof typeof EnumName]` to define the enum.
 //
-// We have multiple different enums available.  A cue enum could be `1 | 2 | 3`.
+// In effect, this enum is a higher-kind helper for generating Typescript.  It
+// creates concrete AST for enums depending on the members that it contains.
 type Enum struct {
 	Name    string
 	Members []AstKind
