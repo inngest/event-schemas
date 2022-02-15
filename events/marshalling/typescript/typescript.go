@@ -7,6 +7,7 @@ import (
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/ast"
+	"cuelang.org/go/cue/format"
 )
 
 var (
@@ -132,8 +133,7 @@ func generateAST(ctx context.Context, label string, v cue.Value) ([]*Expr, []Ast
 		}
 		return exprs, ast, nil
 	case cue.ListKind:
-		ast, err := generateArray(ctx, label, v)
-		return nil, ast, err
+		return generateArray(ctx, label, v)
 	default:
 		syn := v.Syntax(cue.All())
 		switch ident := syn.(type) {
@@ -198,20 +198,25 @@ func generateScalar(ctx context.Context, label string, v cue.Value) (AstKind, er
 }
 
 // generateArray returns an array.  This will always produce a type definition, even if all
-// values in the cue list are basic literal values.
-func generateArray(ctx context.Context, label string, v cue.Value) ([]AstKind, error) {
+// values in the cue list are basic literal values (eg. instead of ["1", "2"] this will generate
+// Array<string>).
+//
+// This may return top-level expressions if the array contains a struct with enums.
+func generateArray(ctx context.Context, label string, v cue.Value) ([]*Expr, []AstKind, error) {
 	members := []AstKind{}
 
 	// Walk the iterator for all basic values first.
 	iter, err := v.List()
 	if err != nil {
-		return nil, fmt.Errorf("invalid value generating array: %w", err)
+		return nil, nil, fmt.Errorf("invalid value generating array: %w", err)
 	}
 
 	for iter.Next() {
+		// This is not called for type definitions;  only for concrete values.
 		_, ast, err := generateAST(ctx, iter.Label(), iter.Value())
+
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		members = append(members, ast...)
 	}
@@ -223,11 +228,11 @@ func generateArray(ctx context.Context, label string, v cue.Value) ([]AstKind, e
 	// and create TS AST from them.
 	listLit, ok := v.Syntax(cue.All()).(*ast.ListLit)
 	if !ok {
-		return nil, fmt.Errorf("unknown list ast type: %T", v.Syntax(cue.All()))
+		return nil, nil, fmt.Errorf("unknown list ast type: %T", v.Syntax(cue.All()))
 	}
 
 	if len(listLit.Elts) == 0 {
-		return []AstKind{
+		return nil, []AstKind{
 			Binding{
 				Kind: BindingTypedArray,
 			},
@@ -244,6 +249,7 @@ func generateArray(ctx context.Context, label string, v cue.Value) ([]AstKind, e
 	// that we end up duplicating TS type names.
 	mappedTypes := map[string]struct{}{}
 
+	exprs := []*Expr{}
 	for len(elts) > 0 {
 		elt := elts[0]
 		elts = elts[1:]
@@ -256,6 +262,17 @@ func generateArray(ctx context.Context, label string, v cue.Value) ([]AstKind, e
 		case *ast.BasicLit:
 			// Basic value  This would already have been covered in the
 			// iterator case above.
+		case *ast.StructLit:
+			value, err := astToValue(&cue.Runtime{}, a)
+			if err != nil {
+				return nil, nil, fmt.Errorf("error converting array struct to value: %w", err)
+			}
+			e, ast, err := generateStructBinding(ctx, value)
+			if err != nil {
+				return nil, nil, fmt.Errorf("error generating array struct type: %w", err)
+			}
+			exprs = append(exprs, e...)
+			members = append(members, ast...)
 		case *ast.Ident:
 			typeName := identToTS(a.Name)
 			if _, ok := mappedTypes[typeName]; ok {
@@ -271,7 +288,7 @@ func generateArray(ctx context.Context, label string, v cue.Value) ([]AstKind, e
 		Members: members,
 	}
 
-	return []AstKind{binding}, nil
+	return exprs, []AstKind{binding}, nil
 }
 
 // generateEnum creates an enum definition which should be epanded to its
@@ -411,4 +428,19 @@ func indentLevel(ctx context.Context) int {
 func withIncreasedIndentLevel(ctx context.Context) context.Context {
 	level := indentLevel(ctx) + 1
 	return context.WithValue(ctx, ctxIndentLevel, level)
+}
+
+func astToValue(r *cue.Runtime, ast ast.Node) (cue.Value, error) {
+	// XXX: We really need a better way to create a cue.Value from
+	// an AST struct.
+	byt, _ := format.Node(
+		ast,
+		format.TabIndent(false),
+		format.UseSpaces(2),
+	)
+	inst, err := r.Compile(".", byt)
+	if err != nil {
+		return cue.Value{}, err
+	}
+	return inst.Value(), nil
 }

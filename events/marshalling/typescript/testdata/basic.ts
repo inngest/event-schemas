@@ -17,6 +17,12 @@ export type Action = typeof Action[keyof typeof Action];
 
 export type Mixed = string | number;
 
+export const Heyy = {
+  WHAT: "what",
+  DO: "do",
+} as const;
+export type Heyy = typeof Heyy[keyof typeof Heyy];
+
 export interface Event {
   name: string;
   data: {
@@ -30,6 +36,14 @@ export interface Event {
     enabled: boolean;
     numeric: number;
     mixed: Mixed;
+    friends: Array<{
+      id: number;
+      name: string;
+    }>;
+    nested: Array<{
+      id: number;
+      heyy: Heyy;
+    }>;
   };
   allow: {
     with: string;

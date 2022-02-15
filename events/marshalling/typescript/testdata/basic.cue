@@ -18,6 +18,14 @@ Status: "open" | "closed"
 		enabled:         bool
 		numeric:         number
 		mixed:           string | int
+		friends: [...{
+			id:   int
+			name: string
+		}]
+		nested: [...{
+			id:   int
+			heyy: "what" | "do"
+		}]
 	}
 	allow: #Some & {
 		included: bool
