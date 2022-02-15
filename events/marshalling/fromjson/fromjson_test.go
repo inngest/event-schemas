@@ -39,7 +39,7 @@ func TestFromJSON(t *testing.T) {
 
 		actual, err := FromJSON(data)
 		require.NoError(t, err)
-		require.True(t, len(actual) > 2)
+		require.True(t, len(actual) > 2, "no type generated: %s", actual)
 
 		// NOTE: Golang maps do not retain any order.  This means that the
 		// values are bound to be different on each test run.  We figure out
@@ -59,11 +59,14 @@ func TestFromJSON(t *testing.T) {
 			fmt.Println(actual)
 		}
 
-		require.True(t, matches, "generated types do not match")
+		require.True(t, matches, "generated types do not match (got %s)", actual)
 
 		// Ensure B also subsumes A so that they're the same.
 		matches = instB.Value().Subsumes(instA.Value())
-		require.True(t, matches, "generated types do not match")
+		if !matches {
+			fmt.Println(actual)
+		}
+		require.True(t, matches, "generated types do not reverse-match (got %s)", actual)
 	}
 }
 

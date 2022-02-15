@@ -74,6 +74,7 @@ func FromJSON(input map[string]interface{}) (typeDef string, err error) {
 //	// inspect the AST.
 //	spew.Dump(node)
 func walk(obj map[string]interface{}, def *ast.StructLit) {
+
 	for k, v := range obj {
 		typ := kind(v)
 
@@ -81,13 +82,63 @@ func walk(obj map[string]interface{}, def *ast.StructLit) {
 		var value ast.Expr
 		switch typ {
 		case cue.ListKind:
-			typ = walkSlice(v.([]interface{}))
-			value = &ast.ListLit{
-				Elts: []ast.Expr{
-					&ast.Ellipsis{
-						Type: typeExpr(typ),
+			var structs []*ast.StructLit
+
+			typ, structs = walkSlice(v.([]interface{}))
+			if typ == cue.StructKind && len(structs) == 1 {
+				// This is an array of structs.
+				value = &ast.ListLit{
+					Elts: []ast.Expr{
+						&ast.Ellipsis{
+							Type: structs[0],
+						},
 					},
-				},
+				}
+
+			}
+			if typ == cue.StructKind && len(structs) > 1 {
+				// There is more than one struct.  Make binary expressions
+				// for all structs.
+				current := &ast.BinaryExpr{
+					Op: cue.OrOp.Token(),
+				}
+				top := current
+				for n, s := range structs {
+					copied := s
+					if n == len(structs)-1 {
+						// This is the last element, so mark it as the Y of the final
+						// binary expression.
+						current.Y = copied
+						continue
+					}
+					current.X = copied
+					if n < len(structs)-2 {
+						// There is > 1 item left, so we need a new binary
+						// expression to join the next two.
+						current.Y = &ast.BinaryExpr{
+							Op: cue.OrOp.Token(),
+						}
+						current = current.Y.(*ast.BinaryExpr)
+					}
+				}
+
+				value = &ast.ListLit{
+					Elts: []ast.Expr{
+						&ast.Ellipsis{
+							Type: top,
+						},
+					},
+				}
+			}
+
+			if typ != cue.StructKind || len(structs) == 0 {
+				value = &ast.ListLit{
+					Elts: []ast.Expr{
+						&ast.Ellipsis{
+							Type: typeExpr(typ),
+						},
+					},
+				}
 			}
 		case cue.StructKind:
 			// Create a new struct and walk the map
@@ -125,25 +176,73 @@ func typeExpr(k cue.Kind) ast.Expr {
 	return &ast.BasicLit{Kind: token.STRING, Value: k.TypeString()}
 }
 
-// walkSlice walks a slice to calculate the types which occur within the slice.
-func walkSlice(slice []interface{}) cue.Kind {
+// walkSlice walks a slice to calculate the types which occur within the slice.  If the
+// slice is primitive scalars only the types are represented by the single cue.Kind type
+// returned (via a bitmask).  If the slice contains a struct, we return the cue.Kind
+// bitmask and a list of []*ast.StructLit struct definitons.
+func walkSlice(slice []interface{}) (cue.Kind, []*ast.StructLit) {
 	var found cue.Kind
 
+	structs := []*ast.StructLit{}
 	for _, item := range slice {
+		k := kind(item)
+
+		if k == cue.StructKind {
+			// Map the type of this struct.
+			structAST := ast.NewStruct()
+			walk(item.(map[string]interface{}), structAST)
+			structs = append(structs, structAST)
+		}
+
 		if found == cue.BottomKind {
-			found = kind(item)
+			found = k
 			continue
 		}
+
 		// Add the type to the list of available types.
-		found = found | kind(item)
+		found = found | k
 	}
 
 	if found == cue.BottomKind {
 		// no type;  return "_" for any.
-		return cue.TopKind
+		return cue.TopKind, nil
 	}
 
-	return found
+	// Deduplicate struct definitions by seeing which are subsumable.
+	// We can't rely on ASTs as maps have randomized key ordering.
+	r := &cue.Runtime{}
+
+	deduped := []*ast.StructLit{}
+NEXT:
+	for _, next := range structs {
+		if len(deduped) == 0 {
+			deduped = append(deduped, next)
+		}
+
+		// We ignore errors as this is best-effort.  Worst case we return
+		// no concrete struct definitions and use the top-level {...}
+		// struct identifier for any key/values.
+		instA, _ := astToValue(r, next)
+
+		// Does this match any existing struct type?
+		for _, existing := range deduped {
+			// XXX: Store these mapped to process once.
+			instB, _ := astToValue(r, existing)
+
+			subA := instA.Value().Subsumes(instB.Value())
+			subB := instB.Value().Subsumes(instA.Value())
+			if subA && subB {
+				// This is the same as an existing type.  Continue
+				// the iteration through struct definitions.
+				continue NEXT
+			}
+		}
+
+		// This doesn't match any, so we add and continue
+		deduped = append(deduped, next)
+	}
+
+	return found, deduped
 }
 
 // kind returns a cue.Kind representing the type for the given value.
@@ -176,4 +275,18 @@ func kind(v interface{}) cue.Kind {
 	}
 
 	return cue.TopKind
+}
+
+func astToValue(r *cue.Runtime, ast ast.Node) (cue.Value, error) {
+	// Format the cue code.
+	byt, _ := format.Node(
+		ast,
+		format.TabIndent(false),
+		format.UseSpaces(2),
+	)
+	inst, err := r.Compile(".", byt)
+	if err != nil {
+		return cue.Value{}, err
+	}
+	return inst.Value(), nil
 }

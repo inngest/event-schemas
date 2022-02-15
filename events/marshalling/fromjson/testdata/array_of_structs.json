@@ -1,0 +1,14 @@
+{
+  "array": [
+    { "id": "1", "ok": true },
+    { "id": "2", "ok": true },
+    { "id": "3", "ok": false },
+    { "id": "4", "ok": true }
+  ],
+  "mixed_array": [
+    { "id": "1", "number": 1.2, "ok": true },
+    { "id": "2", "number": 8.2, "ok": true },
+    { "id": "3", "number": 4, "ok": true },
+    { "id": "4", "number": 1.2, "another_str": "lol" }
+  ]
+}
