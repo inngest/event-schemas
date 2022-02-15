@@ -242,7 +242,7 @@ func (b Binding) String() string {
 
 	case BindingTypedArray:
 		if len(b.Members) == 0 {
-			return "Array<>"
+			return "Array<unknown>"
 		}
 
 		str := strings.Builder{}
