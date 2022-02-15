@@ -67,7 +67,7 @@ func MarshalCueValue(v cue.Value) (map[string]interface{}, error) {
 
 // Schemas stores all schemas generated for a cue file.
 type Schemas struct {
-	// All stores all generated schemas, in a
+	// All stores all generated schemas, in a map.
 	All map[string]map[string]interface{}
 }
 
