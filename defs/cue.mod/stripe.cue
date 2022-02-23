@@ -63,6 +63,53 @@ stripe_customer_created: #Def & {
 			email?: string
 		}
 	}
+
+	examples: [
+		"""
+			{
+			  "id": "evt_1KWTPTJKEym2H9Vg1CGtbZc8",
+			  "object": "event",
+			  "api_version": "2020-08-27",
+			  "created": 1645655651,
+			  "data": {
+			    "object": {
+			      "id": "cus_LCtB7H0tTFBxEn",
+			      "object": "customer",
+			      "address": null,
+			      "balance": 0,
+			      "created": 1645655651,
+			      "currency": null,
+			      "default_source": null,
+			      "delinquent": false,
+			      "description": "(created by Stripe CLI)",
+			      "discount": null,
+			      "email": null,
+			      "invoice_prefix": "DFF92B48",
+			      "invoice_settings": {
+				"custom_fields": null,
+				"default_payment_method": null,
+				"footer": null
+			      },
+			      "livemode": false,
+			      "metadata": {},
+			      "name": null,
+			      "next_invoice_sequence": 1,
+			      "phone": null,
+			      "preferred_locales": [],
+			      "shipping": null,
+			      "tax_exempt": "none"
+			    }
+			  },
+			  "livemode": false,
+			  "pending_webhooks": 2,
+			  "request": {
+			    "id": "req_kgeJvoqQgzYOz7",
+			    "idempotency_key": "a901cf97-c405-4536-8089-c2af77d57d10"
+			  },
+			  "type": "customer.created"
+			}
+			""",
+	]
 }
 
 stripe_charge_succeeded: #Def & {
