@@ -156,13 +156,16 @@ func gen(v cue.Value) (*events.Event, error) {
 		service = parts[0]
 	}
 
+	examples := []string{}
+	err = cueField(v, "examples").Value.Decode(&examples)
+
 	evt := &events.Event{
 		Name:        name,
 		Service:     service,
 		Description: cueString(v, "description"),
 		Schema:      schema,
 		Cue:         cuedef,
-		Example:     cueString(v, "example"),
+		Examples:    examples,
 		Version:     cueString(sf.Value, "v"),
 	}
 

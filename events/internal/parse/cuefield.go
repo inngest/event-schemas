@@ -1,6 +1,8 @@
 package parse
 
-import "cuelang.org/go/cue"
+import (
+	"cuelang.org/go/cue"
+)
 
 func cueField(v cue.Value, field string) cue.FieldInfo {
 	f, _ := v.LookupField(field)

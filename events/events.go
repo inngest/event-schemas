@@ -25,6 +25,6 @@ type Event struct {
 	// Schema is the JSON schema definition of the event.
 	Schema map[string]interface{} `json:"schema"`
 
-	// Example is the canonical example event to display in the UI
-	Example string `json:"example,omitempty"`
+	// Example are canonical example events to display in the UI
+	Examples []string `json:"examples,omitempty"`
 }
