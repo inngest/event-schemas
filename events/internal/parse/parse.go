@@ -15,6 +15,7 @@ import (
 	"github.com/inngest/event-schemas/defs"
 	"github.com/inngest/event-schemas/events"
 	"github.com/inngest/event-schemas/events/marshalling/jsonschema"
+	"github.com/inngest/event-schemas/events/marshalling/typescript"
 )
 
 const (
@@ -146,6 +147,10 @@ func gen(v cue.Value) (*events.Event, error) {
 	if err != nil {
 		return nil, err
 	}
+	ts, err := typescript.MarshalCueValue(sf.Value)
+	if err != nil {
+		return nil, err
+	}
 
 	cuedef, _ := formatValue(sf.Value, cue.Attributes(false))
 	name := cueString(sf.Value, "name")
@@ -164,6 +169,7 @@ func gen(v cue.Value) (*events.Event, error) {
 		Service:     service,
 		Description: cueString(v, "description"),
 		Schema:      schema,
+		TypeScript:  ts,
 		Cue:         cuedef,
 		Examples:    examples,
 		Version:     cueString(sf.Value, "v"),

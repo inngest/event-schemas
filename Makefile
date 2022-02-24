@@ -1,5 +1,6 @@
 cloudflare:
 	go generate ./...
+	mkdir ./dist/
 	cp ./events/generated.json ./dist/generated.json
 	cp ./index.html ./dist/index.html
 

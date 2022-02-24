@@ -25,6 +25,9 @@ type Event struct {
 	// Schema is the JSON schema definition of the event.
 	Schema map[string]interface{} `json:"schema"`
 
+	// TypeScript is the TypeScript definition of the event.
+	TypeScript string `json:"typescript"`
+
 	// Example are canonical example events to display in the UI.
 	Examples []map[string]interface{} `json:"examples,omitempty"`
 }

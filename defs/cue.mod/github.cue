@@ -265,7 +265,7 @@ pull_request: #Def & {
 			// The action taken on this pull request.
 			action: "opened" | "closed" | "merged" | "review_requested" | "synchronize" | "edited"
 			// The pull request number.  Also contained within pull_request
-			number: >=1
+			number: int & >=1
 			organization: {
 				description:        string
 				events_url:         string
@@ -447,7 +447,7 @@ pull_request: #Def & {
 				// The commit hash of the tip of the PR after changes
 				after?: string
 				// The number of changed files
-				changed_files: >=1
+				changed_files: int & >=1
 				milestone:     _
 				node_id:       string
 				number:        int
@@ -628,7 +628,7 @@ pull_request: #Def & {
 					}
 				}
 				// The number of individual commits wanting to be merged
-				commits:            >=1
+				commits:            int & >=1
 				id:                 int
 				review_comment_url: string
 				review_comments:    int
