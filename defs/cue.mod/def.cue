@@ -16,5 +16,5 @@ package eventdefintions
 		v?: string
 	}
 
-	examples?: [...string]
+	examples?: [...{...}]
 }
