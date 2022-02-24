@@ -63,53 +63,52 @@ stripe_customer_created: #Def & {
 			email?: string
 		}
 	}
-
-	examples: [
-		"""
-			{
-			  "id": "evt_1KWTPTJKEym2H9Vg1CGtbZc8",
-			  "object": "event",
-			  "api_version": "2020-08-27",
-			  "created": 1645655651,
-			  "data": {
-			    "object": {
-			      "id": "cus_LCtB7H0tTFBxEn",
-			      "object": "customer",
-			      "address": null,
-			      "balance": 0,
-			      "created": 1645655651,
-			      "currency": null,
-			      "default_source": null,
-			      "delinquent": false,
-			      "description": "(created by Stripe CLI)",
-			      "discount": null,
-			      "email": null,
-			      "invoice_prefix": "DFF92B48",
-			      "invoice_settings": {
-				"custom_fields": null,
-				"default_payment_method": null,
-				"footer": null
-			      },
-			      "livemode": false,
-			      "metadata": {},
-			      "name": null,
-			      "next_invoice_sequence": 1,
-			      "phone": null,
-			      "preferred_locales": [],
-			      "shipping": null,
-			      "tax_exempt": "none"
-			    }
-			  },
-			  "livemode": false,
-			  "pending_webhooks": 2,
-			  "request": {
-			    "id": "req_kgeJvoqQgzYOz7",
-			    "idempotency_key": "a901cf97-c405-4536-8089-c2af77d57d10"
-			  },
-			  "type": "customer.created"
+	examples: [{
+		name: "stripe/customer.created"
+		data: {
+			id:          "evt_1KWTPTJKEym2H9Vg1CGtbZc8"
+			object:      "event"
+			api_version: "2020-08-27"
+			created:     1645655651
+			data: {
+				object: {
+					id:             "cus_LCtB7H0tTFBxEn"
+					object:         "customer"
+					address:        null
+					balance:        0
+					created:        1645655651
+					currency:       null
+					default_source: null
+					delinquent:     false
+					description:    ""
+					discount:       null
+					email:          null
+					invoice_prefix: "DFF92B48"
+					invoice_settings: {
+						custom_fields:          null
+						default_payment_method: null
+						footer:                 null
+					}
+					livemode: false
+					metadata: {}
+					name:                  null
+					next_invoice_sequence: 1
+					phone:                 null
+					preferred_locales: []
+					shipping:   null
+					tax_exempt: "none"
+				}
 			}
-			""",
-	]
+			livemode:         false
+			pending_webhooks: 2
+			request: {
+				id:              "req_kgeJvoqQgzYOz7"
+				idempotency_key: "a901cf97-c405-4536-8089-c2af77d57d10"
+			}
+			type: "customer.created"
+		}
+		ts: 16456556510000
+	}]
 }
 
 stripe_charge_succeeded: #Def & {
@@ -258,141 +257,140 @@ stripe_charge_succeeded: #Def & {
 			email?: string
 		}
 	}
-
-	examples: [
-		"""
-			{
-			  "id": "evt_3KWSdjJKEym2H9Vg0VTPKkfD",
-			  "object": "event",
-			  "api_version": "2020-08-27",
-			  "created": 1645652691,
-			  "data": {
-			    "object": {
-			      "id": "ch_3KWSdjJKEym2H9Vg0qAid6Vb",
-			      "object": "charge",
-			      "amount": 100,
-			      "amount_captured": 0,
-			      "amount_refunded": 0,
-			      "application": null,
-			      "application_fee": null,
-			      "application_fee_amount": null,
-			      "balance_transaction": null,
-			      "billing_details": {
-				"address": {
-				  "city": null,
-				  "country": null,
-				  "line1": null,
-				  "line2": null,
-				  "postal_code": null,
-				  "state": null
-				},
-				"email": null,
-				"name": null,
-				"phone": null
-			      },
-			      "calculated_statement_descriptor": "INNGEST.COM",
-			      "captured": false,
-			      "created": 1645652691,
-			      "currency": "usd",
-			      "customer": null,
-			      "description": "(created by Stripe CLI)",
-			      "destination": null,
-			      "dispute": null,
-			      "disputed": false,
-			      "failure_code": null,
-			      "failure_message": null,
-			      "fraud_details": {},
-			      "invoice": null,
-			      "livemode": false,
-			      "metadata": {},
-			      "on_behalf_of": null,
-			      "order": null,
-			      "outcome": {
-				"network_status": "approved_by_network",
-				"reason": null,
-				"risk_level": "normal",
-				"risk_score": 31,
-				"seller_message": "Payment complete.",
-				"type": "authorized"
-			      },
-			      "paid": true,
-			      "payment_intent": null,
-			      "payment_method": "card_1KWSdjJKEym2H9Vg5nVjO98Q",
-			      "payment_method_details": {
-				"card": {
-				  "brand": "visa",
-				  "checks": {
-				    "address_line1_check": null,
-				    "address_postal_code_check": null,
-				    "cvc_check": null
-				  },
-				  "country": "US",
-				  "exp_month": 2,
-				  "exp_year": 2023,
-				  "fingerprint": "Te4OI5BJL6MnK9Ey",
-				  "funding": "credit",
-				  "installments": null,
-				  "last4": "4242",
-				  "network": "visa",
-				  "three_d_secure": null,
-				  "wallet": null
-				},
-				"type": "card"
-			      },
-			      "receipt_email": null,
-			      "receipt_number": null,
-			      "receipt_url": "https://pay.stripe.com/receipts/acct_1IVczWJKEym2H9Vg/ch_3KWSdjJKEym2H9Vg0qAid6Vb/rcpt_LCsOjvrEm5K2yuZe50LNfm4AeiblR3e",
-			      "refunded": false,
-			      "refunds": {
-				"object": "list",
-				"data": [],
-				"has_more": false,
-				"total_count": 0,
-				"url": "/v1/charges/ch_3KWSdjJKEym2H9Vg0qAid6Vb/refunds"
-			      },
-			      "review": null,
-			      "shipping": null,
-			      "source": {
-				"id": "card_1KWSdjJKEym2H9Vg5nVjO98Q",
-				"object": "card",
-				"address_city": null,
-				"address_country": null,
-				"address_line1": null,
-				"address_line1_check": null,
-				"address_line2": null,
-				"address_state": null,
-				"address_zip": null,
-				"address_zip_check": null,
-				"brand": "Visa",
-				"country": "US",
-				"customer": null,
-				"cvc_check": null,
-				"dynamic_last4": null,
-				"exp_month": 2,
-				"exp_year": 2023,
-				"fingerprint": "Te4OI5BJL6MnK9Ey",
-				"funding": "credit",
-				"last4": "4242",
-				"metadata": {},
-				"name": null,
-				"tokenization_method": null
-			      },
-			      "source_transfer": null,
-			      "statement_descriptor": null,
-			      "statement_descriptor_suffix": null,
-			      "status": "succeeded",
-			      "transfer_data": null,
-			      "transfer_group": null
-			    }
-			  },
-			  "livemode": false,
-			  "pending_webhooks": 1,
-			  "request": {
-			    "id": "req_fuQl3aU6rajYFa",
-			    "idempotency_key": "717c61b7-0203-4d47-944a-142bc61cdb44"
-			  },
-			  "type": "charge.succeeded"
+	examples: [{
+		name: "stripe/charge.succeeded"
+		data: {
+			id:          "evt_3KWSdjJKEym2H9Vg0VTPKkfD"
+			object:      "event"
+			api_version: "2020-08-27"
+			created:     1645652691
+			data: {
+				object: {
+					id:                     "ch_3KWSdjJKEym2H9Vg0qAid6Vb"
+					object:                 "charge"
+					amount:                 100
+					amount_captured:        0
+					amount_refunded:        0
+					application:            null
+					application_fee:        null
+					application_fee_amount: null
+					balance_transaction:    null
+					billing_details: {
+						address: {
+							city:        null
+							country:     null
+							line1:       null
+							line2:       null
+							postal_code: null
+							state:       null
+						}
+						email: null
+						name:  null
+						phone: null
+					}
+					calculated_statement_descriptor: ""
+					captured:                        false
+					created:                         1645652691
+					currency:                        "usd"
+					customer:                        null
+					description:                     ""
+					destination:                     null
+					dispute:                         null
+					disputed:                        false
+					failure_code:                    null
+					failure_message:                 null
+					fraud_details: {}
+					invoice:  null
+					livemode: false
+					metadata: {}
+					on_behalf_of: null
+					order:        null
+					outcome: {
+						network_status: "approved_by_network"
+						reason:         null
+						risk_level:     "normal"
+						risk_score:     31
+						seller_message: "Payment complete."
+						type:           "authorized"
+					}
+					paid:           true
+					payment_intent: null
+					payment_method: "card_1KWSdjJKEym2H9Vg5nVjO98Q"
+					payment_method_details: {
+						card: {
+							brand: "visa"
+							checks: {
+								address_line1_check:       null
+								address_postal_code_check: null
+								cvc_check:                 null
+							}
+							country:        "US"
+							exp_month:      2
+							exp_year:       2023
+							fingerprint:    "Te4OI5BJL6MnK9Ey"
+							funding:        "credit"
+							installments:   null
+							last4:          "4242"
+							network:        "visa"
+							three_d_secure: null
+							wallet:         null
+						}
+						type: "card"
+					}
+					receipt_email:  null
+					receipt_number: null
+					receipt_url:    "https://pay.stripe.com/receipts/..."
+					refunded:       false
+					refunds: {
+						object: "list"
+						data: []
+						has_more:    false
+						total_count: 0
+						url:         "/v1/charges/ch_3KWSdjJKEym2H9Vg0qAid6Vb/refunds"
+					}
+					review:   null
+					shipping: null
+					source: {
+						id:                  "card_1KWSdjJKEym2H9Vg5nVjO98Q"
+						object:              "card"
+						address_city:        null
+						address_country:     null
+						address_line1:       null
+						address_line1_check: null
+						address_line2:       null
+						address_state:       null
+						address_zip:         null
+						address_zip_check:   null
+						brand:               "Visa"
+						country:             "US"
+						customer:            null
+						cvc_check:           null
+						dynamic_last4:       null
+						exp_month:           2
+						exp_year:            2023
+						fingerprint:         "Te4OI5BJL6MnK9Ey"
+						funding:             "credit"
+						last4:               "4242"
+						metadata: {}
+						name:                null
+						tokenization_method: null
+					}
+					source_transfer:             null
+					statement_descriptor:        null
+					statement_descriptor_suffix: null
+					status:                      "succeeded"
+					transfer_data:               null
+					transfer_group:              null
+				}
 			}
-			""",
-	]
+			livemode:         false
+			pending_webhooks: 1
+			request: {
+				id:              "req_fuQl3aU6rajYFa"
+				idempotency_key: "717c61b7-0203-4d47-944a-142bc61cdb44"
+			}
+			type: "charge.succeeded"
+		}
+		ts: 1645652691000
+	}]
 }
