@@ -22,7 +22,7 @@ import (
 const (
 	serviceSeparator = "/"
 
-	typescriptEventName = "Event"
+	typescriptEventName = "InngestEvent"
 )
 
 var (
