@@ -14,6 +14,9 @@ package eventdefintions
 
 		// An optional event version
 		v?: string
+
+		// The epoch of the event, in milliseconds
+		ts?: number
 	}
 
 	examples?: [...{...}]
