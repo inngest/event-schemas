@@ -6,20 +6,23 @@ import (
 	"fmt"
 	"io/fs"
 	"path"
+	"regexp"
 	"strings"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/format"
 	"cuelang.org/go/cue/load"
 	"cuelang.org/go/encoding/openapi"
+	"github.com/inngest/cuetypescript"
 	"github.com/inngest/event-schemas/defs"
 	"github.com/inngest/event-schemas/events"
 	"github.com/inngest/event-schemas/events/marshalling/jsonschema"
-	"github.com/inngest/event-schemas/events/marshalling/typescript"
 )
 
 const (
 	serviceSeparator = "/"
+
+	typescriptEventName = "Event"
 )
 
 var (
@@ -27,6 +30,7 @@ var (
 		PkgName: "",
 		Version: "3.0.0",
 	}
+	nonAlphaRegexp = regexp.MustCompile("[^\\w]|_")
 )
 
 // Parse evaluates all embeded cue files within defs/cue.mod, returning parsed event
@@ -147,13 +151,15 @@ func gen(v cue.Value) (*events.Event, error) {
 	if err != nil {
 		return nil, err
 	}
-	ts, err := typescript.MarshalCueValue(sf.Value)
-	if err != nil {
-		return nil, err
-	}
 
 	cuedef, _ := formatValue(sf.Value, cue.Attributes(false))
 	name := cueString(sf.Value, "name")
+
+	// Marshal the typescript in an embedded event.
+	ts, err := genTypescript(name, sf.Value)
+	if err != nil {
+		return nil, err
+	}
 
 	var service string
 	parts := strings.SplitN(name, serviceSeparator, 2)
@@ -176,6 +182,27 @@ func gen(v cue.Value) (*events.Event, error) {
 	}
 
 	return evt, nil
+}
+
+func genTypescript(name string, v cue.Value) (string, error) {
+	// Create a new struct which wraps the cue schema.
+	val, err := formatValue(v, cue.Attributes(true))
+	if err != nil {
+		return "", fmt.Errorf("error formatting schema value: %w", err)
+	}
+	r := &cue.Runtime{}
+	inst, err := r.Compile(".", fmt.Sprintf("%s: %s", typescriptEventName, val))
+	if err != nil {
+		return "", fmt.Errorf("error wrapping schema with event name: %w", err)
+	}
+
+	return cuetypescript.MarshalCueValue(inst.Value())
+}
+
+func titleCaseName(name string) string {
+	name = nonAlphaRegexp.ReplaceAllString(name, " ")
+	name = strings.Title(name)
+	return strings.ReplaceAll(name, " ", "")
 }
 
 /*

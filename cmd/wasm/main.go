@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"syscall/js"
 
+	"github.com/inngest/cuetypescript"
 	"github.com/inngest/event-schemas/events/marshalling/fromjson"
 	"github.com/inngest/event-schemas/events/marshalling/jsonschema"
-	"github.com/inngest/event-schemas/events/marshalling/typescript"
 )
 
 func main() {
@@ -48,7 +48,7 @@ func ToTS(this js.Value, args []js.Value) interface{} {
 	}
 
 	input := args[0].String()
-	ts, err := typescript.MarshalString(input)
+	ts, err := cuetypescript.MarshalString(input)
 	if err != nil {
 		return fmt.Sprintf("error generating typescript: %w", err)
 	}
