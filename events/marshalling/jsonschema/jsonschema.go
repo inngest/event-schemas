@@ -5,7 +5,11 @@ import (
 	"fmt"
 
 	"cuelang.org/go/cue"
+	"cuelang.org/go/cue/ast"
+	"cuelang.org/go/cue/ast/astutil"
 	"cuelang.org/go/cue/format"
+	cuejson "cuelang.org/go/encoding/json"
+	"cuelang.org/go/encoding/jsonschema"
 	"cuelang.org/go/encoding/openapi"
 )
 
@@ -15,6 +19,42 @@ var (
 		Version: "3.0.0",
 	}
 )
+
+// UnmarshalString returns a cue type for an event from a JSON schema definition.
+func UnmarshalString(schema string) (string, error) {
+	// Decode the schema into a cue.Instance.
+	r := &cue.Runtime{}
+	in, err := cuejson.Decode(r, "", []byte(schema))
+	if err != nil {
+		return "", err
+	}
+
+	expr, err := jsonschema.Extract(in, &jsonschema.Config{})
+	if err != nil {
+		return "", err
+	}
+	if expr == nil {
+		return "", fmt.Errorf("no definition generated from json schema")
+	}
+	if err := astutil.Sanitize(expr); err != nil {
+		return "", err
+	}
+
+	// By default, this returns event data as top-level values, ie. not wrapped
+	// in an object.  By compiling the file we can extract the top-level implicit
+	// object as a cue.Value and format that node.
+	//
+	// This gives us an outer object:
+	// {
+	//    name: "..."
+	// }
+	instance, err := r.CompileFile(expr)
+	if err != nil {
+		return "", err
+	}
+
+	return formatValue(instance.Value())
+}
 
 // MarshalString generates OpenAPI schemas given cue configuration.  Schemas are
 // generated for each top-level identifier;  many schemas are generated:
@@ -97,8 +137,12 @@ func formatValue(input cue.Value, opts ...cue.Option) (string, error) {
 	}, opts...)
 
 	syn := input.Syntax(opts...)
+	return formatNode(syn)
+}
+
+func formatNode(input ast.Node, opts ...format.Option) (string, error) {
 	out, err := format.Node(
-		syn,
+		input,
 		format.TabIndent(false),
 		format.UseSpaces(2),
 	)
