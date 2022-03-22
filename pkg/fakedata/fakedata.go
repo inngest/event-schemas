@@ -57,7 +57,9 @@ func Fake(ctx context.Context, v cue.Value) (cue.Value, error) {
 	}
 
 	// Iterate through the value, adding each field to the struct output.
-	walk(ctx, v, s.StructLit, DefaultOptions)
+	if err := walk(ctx, v, s.StructLit, DefaultOptions); err != nil {
+		return cue.Value{}, err
+	}
 
 	// Format the output.
 	byt, err := format.Node(
@@ -84,6 +86,15 @@ func walk(ctx context.Context, v cue.Value, to *ast.StructLit, o Options) (err e
 			err = fmt.Errorf("error generating fake data: %v", r)
 		}
 	}()
+
+	// This could be an enum across structs.  If that's the case, use one of the
+	// structs as the value.
+	op, exprVals := v.Expr()
+	if op == cue.OrOp {
+		// Choose one of the epressions to use randomly.
+		i := o.Rand.Intn(len(exprVals))
+		v = exprVals[i]
+	}
 
 	it, err := v.Fields()
 	if err != nil {
@@ -123,13 +134,15 @@ func walk(ctx context.Context, v cue.Value, to *ast.StructLit, o Options) (err e
 			set(to, label, inner)
 			// Iterate into the struct and walk through those fields,
 			// setting where necessary
-			walk(nestedCtx, val, inner, o)
+			if err := walk(nestedCtx, val, inner, o); err != nil {
+				return err
+			}
 		default:
 			// Can't do this one, homie.
 		}
 	}
 
-	return
+	return err
 }
 
 // genString returns cue AST representing a string

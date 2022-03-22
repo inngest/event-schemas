@@ -191,6 +191,17 @@ func TestFakeData(t *testing.T) {
 		{
 			input: `
 			{
+				something: { email: string } | { phone: string }
+			}
+			`,
+			seed: 1274,
+			expected: map[string]interface{}{
+				"something": map[string]interface{}{"phone": "Accusantium consequatur perferendis sit aut voluptatem."},
+			},
+		},
+		{
+			input: `
+			{
 				name: "foo"
 				email: string
 				website_url: string
