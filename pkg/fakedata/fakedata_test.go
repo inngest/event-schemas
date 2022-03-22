@@ -194,6 +194,7 @@ func TestFakeData(t *testing.T) {
 				name: "foo"
 				email: string
 				website_url: string
+				enum: "lol" | "what"
 				ok: bool
 				data: {
 					number: >= 1 & <= 10
@@ -204,10 +205,11 @@ func TestFakeData(t *testing.T) {
 			expected: map[string]interface{}{
 				"name":        "foo",
 				"email":       "EJJvgRK@GlkqMrj.biz",
+				"enum":        "what",
 				"website_url": "http://www.DrHmnxY.net/fDJEeNT",
-				"ok":          true,
+				"ok":          false,
 				"data": map[string]interface{}{
-					"number": 7.75,
+					"number": 8.44,
 				},
 			},
 		},
@@ -217,20 +219,22 @@ func TestFakeData(t *testing.T) {
 				name: "foo"
 				email: string
 				website_url: string
+				enum: "lol" | "what"
 				ok: bool
 				data: {
 					number: >= 1 & <= 10
 				}
 			}
 			`,
-			seed: 70211,
+			seed: 772142,
 			expected: map[string]interface{}{
 				"name":        "foo",
-				"email":       "DBxgwKX@Xkjhdrh.info",
-				"website_url": "https://oGlGORH.org/iyERaEO",
+				"email":       "LdXPYli@sbUWRVi.info",
+				"enum":        "what",
+				"website_url": "http://PbPaKRh.biz/WJMTmsf.php",
 				"ok":          false,
 				"data": map[string]interface{}{
-					"number": 5.89,
+					"number": 5.52,
 				},
 			},
 		},
