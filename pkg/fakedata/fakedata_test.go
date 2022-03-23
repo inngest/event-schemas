@@ -249,6 +249,18 @@ func TestFakeData(t *testing.T) {
 				},
 			},
 		},
+		{
+			input: `
+			{
+				name: "foo"
+				email: _
+			}
+			`,
+			seed: 772142,
+			expected: map[string]interface{}{
+				"name": "foo",
+			},
+		},
 	}
 
 	for _, test := range tests {
