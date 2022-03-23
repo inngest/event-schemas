@@ -160,6 +160,17 @@ func TestFakeConstraints(t *testing.T) {
 				},
 			},
 		},
+		{
+			input: `{ data: { email: string } }`,
+			constraints: map[string][]Constraint{
+				"data.email": {
+					{
+						Rule:  RuleFormat,
+						Value: FormatEmail,
+					},
+				},
+			},
+		},
 	}
 
 	for _, item := range tests {
@@ -196,7 +207,7 @@ func TestFakeData(t *testing.T) {
 			`,
 			seed: 1274,
 			expected: map[string]interface{}{
-				"something": map[string]interface{}{"phone": "Accusantium consequatur perferendis sit aut voluptatem."},
+				"something": map[string]interface{}{"phone": "762-531-0198"},
 			},
 		},
 		{
@@ -253,29 +264,33 @@ func TestFakeData(t *testing.T) {
 			input: `
 			{
 				name: "foo"
+				text: string
 				email: _
 			}
 			`,
-			seed: 772142,
+			seed: 812415152,
 			expected: map[string]interface{}{
 				"name": "foo",
+				"text": "En hic de o reliquerim attingere eas e experiendi lux.",
 			},
 		},
 	}
 
 	for _, test := range tests {
-		r := &cue.Runtime{}
-		inst, err := r.Compile(".", test.input)
-		require.NoError(t, err)
+		t.Run(test.input, func(t *testing.T) {
+			r := &cue.Runtime{}
+			inst, err := r.Compile(".", test.input)
+			require.NoError(t, err)
 
-		// Set the seed for deterministic testing
-		DefaultOptions.Rand = rand.New(rand.NewSource(test.seed))
-		output, err := Fake(context.Background(), inst.Value())
+			// Set the seed for deterministic testing
+			DefaultOptions.Rand = rand.New(rand.NewSource(test.seed))
+			output, err := Fake(context.Background(), inst.Value())
 
-		require.NoError(t, err)
-		mapped := map[string]interface{}{}
-		err = output.Decode(&mapped)
-		require.NoError(t, err)
-		require.EqualValues(t, test.expected, mapped)
+			require.NoError(t, err)
+			mapped := map[string]interface{}{}
+			err = output.Decode(&mapped)
+			require.NoError(t, err)
+			require.EqualValues(t, test.expected, mapped)
+		})
 	}
 }

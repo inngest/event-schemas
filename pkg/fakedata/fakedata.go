@@ -265,7 +265,7 @@ func constraints(ctx context.Context, kind Kind, vals ...cue.Value) []Constraint
 
 func predictStringFormats(ctx context.Context) []Constraint {
 	// Get the path from context.
-	parts := strings.Split(path(ctx), ",")
+	parts := strings.Split(path(ctx), ".")
 	if len(parts) == 0 {
 		return nil
 	}
@@ -284,7 +284,7 @@ func predictStringFormats(ctx context.Context) []Constraint {
 	if strings.Contains(field, "ipv6") {
 		return []Constraint{{Rule: RuleFormat, Value: FormatURL}}
 	}
-	if strings.Contains(field, "ip") {
+	if strings.Contains(field, "_ip") || strings.Contains(field, "ip_") {
 		return []Constraint{{Rule: RuleFormat, Value: FormatIPv4}}
 	}
 	if strings.Contains(field, "date") {

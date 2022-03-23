@@ -7,6 +7,7 @@ require (
 	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/google/uuid v1.2.0
 	github.com/inngest/cuetypescript v0.0.0-20220302153725-a00e933fdf87
+	github.com/inngest/golorem v0.0.0-20220323014825-15bf7a53bf79
 	github.com/stretchr/testify v1.7.0
 )
 

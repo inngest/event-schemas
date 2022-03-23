@@ -10,6 +10,7 @@ import (
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/google/uuid"
+	lorem "github.com/inngest/golorem"
 )
 
 const (
@@ -100,6 +101,7 @@ func (g generator) Generate() interface{} {
 }
 
 func (g generator) String() string {
+
 	faker.SetRandomSource(g.o.Rand)
 
 	for _, c := range g.constraints {
@@ -141,6 +143,8 @@ func (g generator) String() string {
 				return faker.IPv6()
 			case FormatDate:
 				return faker.Date()
+			case FormatPhone:
+				return faker.Phonenumber()
 			case FormatTime:
 				return time.Unix(faker.UnixTime(), 0).Format(time.RFC3339)
 			}
@@ -149,7 +153,7 @@ func (g generator) String() string {
 		}
 	}
 
-	return faker.Paragraph()
+	return lorem.New(g.o.Rand).Sentence(1, 20)
 }
 
 func (g generator) Number() interface{} {

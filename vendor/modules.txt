@@ -98,6 +98,9 @@ github.com/google/uuid
 ## explicit; go 1.17
 github.com/inngest/cuetypescript
 github.com/inngest/cuetypescript/generation
+# github.com/inngest/golorem v0.0.0-20220323014825-15bf7a53bf79
+## explicit
+github.com/inngest/golorem
 # github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 ## explicit
 github.com/mpvl/unique
