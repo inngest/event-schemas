@@ -68,7 +68,7 @@ func MarshalString(cuestr string) (Schemas, error) {
 	r := &cue.Runtime{}
 	inst, err := r.Compile(".", cuestr)
 	if err != nil {
-		return Schemas{}, fmt.Errorf("error generating inst: %w", err)
+		return Schemas{}, fmt.Errorf("error generating json schema instance: %w", err)
 	}
 
 	byt, err := openapi.Gen(inst, c)

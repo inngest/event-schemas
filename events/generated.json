@@ -5656,7 +5656,7 @@
     "integration": "stripe",
     "description": "Sent when a customer is created",
     "version": "",
-    "cue": "{\n  // The unique name of the event\n  name: \"stripe/customer.created\"\n  // The event payload, containing all event data\n  data: {\n    livemode: bool\n    // The unique event ID from stripe.\n    id: string\n    data: {\n      object: {\n        default_source?: string\n        delinquent:      bool\n        invoice_prefix:  string\n        invoice_settings: {\n          custom_fields?: [...{\n            name:  string\n            value: string\n          }]\n          default_payment_method?: string\n          footer?:                 string\n        }\n        livemode: bool\n        metadata: {}\n        preferred_locales: [...string]\n        id:        string\n        name?:     string\n        shipping:  _\n        balance:   int\n        currency?: string\n        created:   int\n        address?: {\n          city:        string\n          country:     string\n          line1:       string\n          line2?:      string\n          postal_code: string\n          state:       string\n        }\n        description: string\n        discount?: {\n          id:    string\n          start: int\n          end:   int\n          ...\n        }\n        email?:                string\n        next_invoice_sequence: int\n        phone?:                string\n        tax_exempt:            string\n        object:                string\n      }\n    }\n    request: {\n      id:              string\n      idempotency_key: string\n    }\n    pending_webhooks: int\n    type:             string\n    object:           string\n    api_version:      string\n    created:          int\n  }\n  // User information for the author of the event\n  user: {\n    email?: string\n  }\n\n  // An optional event version\n  v?: string\n\n  // The epoch of the event, in milliseconds\n  ts?: number\n}",
+    "cue": "{\n  // The unique name of the event\n  name: \"stripe/customer.created\"\n  // The event payload, containing all event data\n  data: {\n    livemode: bool\n    // The unique event ID from stripe.\n    id: string\n    data: {\n      object: {\n        default_source?: string\n        delinquent:      bool\n        invoice_prefix:  string\n        invoice_settings: {\n          custom_fields?: [...{\n            name:  string\n            value: string\n          }]\n          default_payment_method?: string\n          footer?:                 string\n        }\n        livemode: bool\n        metadata: {}\n        preferred_locales: [...string]\n        id:        string\n        name?:     string\n        shipping:  _\n        balance:   int\n        currency?: string\n        created:   int\n        address?: {\n          city:        string | null\n          country:     string | null\n          line1:       string | null\n          line2:       string | null\n          postal_code: string | null\n          state:       string | null\n        }\n        description: string\n        discount?: {\n          id:    string\n          start: int\n          end:   int\n          ...\n        }\n        email?:                string\n        next_invoice_sequence: int\n        phone?:                string\n        tax_exempt:            string\n        object:                string\n      }\n    }\n    request: {\n      id:              string\n      idempotency_key: string\n    }\n    pending_webhooks: int\n    type:             string\n    object:           string\n    api_version:      string\n    created:          int\n  }\n  // User information for the author of the event\n  user: {\n    email?: string\n  }\n\n  // An optional event version\n  v?: string\n\n  // The epoch of the event, in milliseconds\n  ts?: number\n}",
     "schema": {
       "properties": {
         "data": {
@@ -5675,21 +5675,27 @@
                     "address": {
                       "properties": {
                         "city": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "country": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "line1": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "line2": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "postal_code": {
+                          "nullable": true,
                           "type": "string"
                         },
                         "state": {
+                          "nullable": true,
                           "type": "string"
                         }
                       },
@@ -5697,6 +5703,7 @@
                         "city",
                         "country",
                         "line1",
+                        "line2",
                         "postal_code",
                         "state"
                       ],
@@ -5907,7 +5914,7 @@
       ],
       "type": "object"
     },
-    "typescript": "export interface InngestEvent {\n  name: \"stripe/customer.created\";\n  data: {\n    livemode: boolean;\n    id: string;\n    data: {\n      object: {\n        default_source?: string;\n        delinquent: boolean;\n        invoice_prefix: string;\n        invoice_settings: {\n          custom_fields?: Array\u003c{\n            name: string;\n            value: string;\n          }\u003e;\n          default_payment_method?: string;\n          footer?: string;\n        };\n        livemode: boolean;\n        metadata: {};\n        preferred_locales: Array\u003cstring\u003e;\n        id: string;\n        name?: string;\n        shipping: unknown;\n        balance: number;\n        currency?: string;\n        created: number;\n        address?: {\n          city: string;\n          country: string;\n          line1: string;\n          line2?: string;\n          postal_code: string;\n          state: string;\n        };\n        description: string;\n        discount?: {\n          id: string;\n          start: number;\n          end: number;\n        };\n        email?: string;\n        next_invoice_sequence: number;\n        phone?: string;\n        tax_exempt: string;\n        object: string;\n      };\n    };\n    request: {\n      id: string;\n      idempotency_key: string;\n    };\n    pending_webhooks: number;\n    type: string;\n    object: string;\n    api_version: string;\n    created: number;\n  };\n  user: {\n    email?: string;\n  };\n  v?: string;\n  ts?: number;\n};\n",
+    "typescript": "export interface InngestEvent {\n  name: \"stripe/customer.created\";\n  data: {\n    livemode: boolean;\n    id: string;\n    data: {\n      object: {\n        default_source?: string;\n        delinquent: boolean;\n        invoice_prefix: string;\n        invoice_settings: {\n          custom_fields?: Array\u003c{\n            name: string;\n            value: string;\n          }\u003e;\n          default_payment_method?: string;\n          footer?: string;\n        };\n        livemode: boolean;\n        metadata: {};\n        preferred_locales: Array\u003cstring\u003e;\n        id: string;\n        name?: string;\n        shipping: unknown;\n        balance: number;\n        currency?: string;\n        created: number;\n        address?: {\n          city: string | null;\n          country: string | null;\n          line1: string | null;\n          line2: string | null;\n          postal_code: string | null;\n          state: string | null;\n        };\n        description: string;\n        discount?: {\n          id: string;\n          start: number;\n          end: number;\n        };\n        email?: string;\n        next_invoice_sequence: number;\n        phone?: string;\n        tax_exempt: string;\n        object: string;\n      };\n    };\n    request: {\n      id: string;\n      idempotency_key: string;\n    };\n    pending_webhooks: number;\n    type: string;\n    object: string;\n    api_version: string;\n    created: number;\n  };\n  user: {\n    email?: string;\n  };\n  v?: string;\n  ts?: number;\n};\n",
     "examples": [
       {
         "data": {
@@ -5954,6 +5961,718 @@
         },
         "name": "stripe/customer.created",
         "ts": 16456556510000
+      }
+    ]
+  },
+  {
+    "name": "stripe/charge.succeeded",
+    "integration": "stripe",
+    "description": "Sent when a charge completes successfully in your account",
+    "version": "",
+    "cue": "{\n  // The unique name of the event\n  name: \"stripe/charge.succeeded\"\n  // The event payload, containing all event data\n  data: {\n    id:          string\n    type:        \"charge.succeeded\"\n    object:      string\n    api_version: string\n    created:     int\n    data: {\n      object: {\n        amount_captured:             int\n        receipt_number:              _\n        receipt_url:                 string\n        source_transfer:             _\n        statement_descriptor_suffix: _\n        transfer_data:               _\n        amount:                      int\n        dispute:                     _\n        disputed:                    bool\n        fraud_details: {\n          stripe_report?: \"fraudulent\"\n          user_report?:   \"fraudulent\" | \"safe\"\n        }\n        livemode: bool\n        metadata: {}\n        // The ID of the order for this charge, if one eixsts.\n        order:    string | null\n        shipping: _\n        billing_details: {\n          address: {\n            city:        string | null\n            country:     string | null\n            line1:       string | null\n            line2:       string | null\n            postal_code: string | null\n            state:       string | null\n          }\n          email: string | null\n          name:  string | null\n          phone: string | null\n        }\n        // The stripe ID of the customer for this charge, if one exists.\n        customer:            string | null\n        payment_method:      string\n        transfer_group:      _\n        amount_refunded:     int\n        refunded:            bool\n        review:              string | null\n        created:             int\n        balance_transaction: string | null\n        on_behalf_of:        _\n        outcome: {\n          seller_message: string\n          type:           string\n          network_status: string\n          reason:         string | null\n          risk_level:     string\n          risk_score:     int\n        }\n        statement_descriptor:            _\n        status:                          string\n        application:                     _\n        calculated_statement_descriptor: string\n        captured:                        bool\n        // The error message explaining the reason for failure, if failed\n        failure_message: string | null\n        receipt_email:   _\n        refunds: {\n          total_count: int\n          url:         string\n          object:      string\n          data: [...]\n          has_more: bool\n        }\n        application_fee_amount: _\n        object:                 string\n        paid:                   bool\n        payment_intent:         _\n        id:                     string\n        currency:               string\n        description:            string\n        destination:            _\n        failure_code:           _\n        invoice:                _\n        payment_method_details: {\n          card: {\n            checks: {\n              address_line1_check:       _\n              address_postal_code_check: _\n              cvc_check:                 _\n            }\n            country:        string\n            exp_month:      int\n            last4:          string\n            network:        string\n            three_d_secure: _\n            brand:          string\n            exp_year:       int\n            fingerprint:    string\n            funding:        string\n            installments:   _\n            wallet:         _\n          }\n          type: string\n        }\n        source: {\n          address_city:  string | null\n          country:       string\n          dynamic_last4: string | null\n          exp_month:     int\n          funding:       string\n          metadata: {}\n          address_zip:         string | null\n          customer:            string | null\n          cvc_check:           string | null\n          object:              string\n          address_country:     string | null\n          brand:               string\n          exp_year:            int\n          name:                string | null\n          fingerprint:         string\n          last4:               string\n          id:                  string\n          address_line1:       string | null\n          address_line1_check: string | null\n          address_line2:       string | null\n          address_state:       string | null\n          address_zip_check:   string | null\n          tokenization_method: string | null\n        }\n        application_fee: _\n      }\n    }\n    livemode:         bool\n    pending_webhooks: int\n    request: {\n      id:              string\n      idempotency_key: string\n    }\n  }\n  // User information for the author of the event\n  user: {\n    email?: string\n  }\n\n  // An optional event version\n  v?: string\n\n  // The epoch of the event, in milliseconds\n  ts?: number\n}",
+    "schema": {
+      "properties": {
+        "data": {
+          "description": "The event payload, containing all event data",
+          "properties": {
+            "api_version": {
+              "type": "string"
+            },
+            "created": {
+              "type": "integer"
+            },
+            "data": {
+              "properties": {
+                "object": {
+                  "properties": {
+                    "amount": {
+                      "type": "integer"
+                    },
+                    "amount_captured": {
+                      "type": "integer"
+                    },
+                    "amount_refunded": {
+                      "type": "integer"
+                    },
+                    "application": {},
+                    "application_fee": {},
+                    "application_fee_amount": {},
+                    "balance_transaction": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "billing_details": {
+                      "properties": {
+                        "address": {
+                          "properties": {
+                            "city": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "country": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "line1": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "line2": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "postal_code": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "state": {
+                              "nullable": true,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "city",
+                            "country",
+                            "line1",
+                            "line2",
+                            "postal_code",
+                            "state"
+                          ],
+                          "type": "object"
+                        },
+                        "email": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "name": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "phone": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "address",
+                        "email",
+                        "name",
+                        "phone"
+                      ],
+                      "type": "object"
+                    },
+                    "calculated_statement_descriptor": {
+                      "type": "string"
+                    },
+                    "captured": {
+                      "type": "boolean"
+                    },
+                    "created": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "customer": {
+                      "description": "The stripe ID of the customer for this charge, if one exists.",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "destination": {},
+                    "dispute": {},
+                    "disputed": {
+                      "type": "boolean"
+                    },
+                    "failure_code": {},
+                    "failure_message": {
+                      "description": "The error message explaining the reason for failure, if failed",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "fraud_details": {
+                      "properties": {
+                        "stripe_report": {
+                          "enum": [
+                            "fraudulent"
+                          ],
+                          "type": "string"
+                        },
+                        "user_report": {
+                          "enum": [
+                            "fraudulent",
+                            "safe"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "invoice": {},
+                    "livemode": {
+                      "type": "boolean"
+                    },
+                    "metadata": {
+                      "type": "object"
+                    },
+                    "object": {
+                      "type": "string"
+                    },
+                    "on_behalf_of": {},
+                    "order": {
+                      "description": "The ID of the order for this charge, if one eixsts.",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "outcome": {
+                      "properties": {
+                        "network_status": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "risk_level": {
+                          "type": "string"
+                        },
+                        "risk_score": {
+                          "type": "integer"
+                        },
+                        "seller_message": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "seller_message",
+                        "type",
+                        "network_status",
+                        "reason",
+                        "risk_level",
+                        "risk_score"
+                      ],
+                      "type": "object"
+                    },
+                    "paid": {
+                      "type": "boolean"
+                    },
+                    "payment_intent": {},
+                    "payment_method": {
+                      "type": "string"
+                    },
+                    "payment_method_details": {
+                      "properties": {
+                        "card": {
+                          "properties": {
+                            "brand": {
+                              "type": "string"
+                            },
+                            "checks": {
+                              "properties": {
+                                "address_line1_check": {},
+                                "address_postal_code_check": {},
+                                "cvc_check": {}
+                              },
+                              "required": [
+                                "address_line1_check",
+                                "address_postal_code_check",
+                                "cvc_check"
+                              ],
+                              "type": "object"
+                            },
+                            "country": {
+                              "type": "string"
+                            },
+                            "exp_month": {
+                              "type": "integer"
+                            },
+                            "exp_year": {
+                              "type": "integer"
+                            },
+                            "fingerprint": {
+                              "type": "string"
+                            },
+                            "funding": {
+                              "type": "string"
+                            },
+                            "installments": {},
+                            "last4": {
+                              "type": "string"
+                            },
+                            "network": {
+                              "type": "string"
+                            },
+                            "three_d_secure": {},
+                            "wallet": {}
+                          },
+                          "required": [
+                            "checks",
+                            "country",
+                            "exp_month",
+                            "last4",
+                            "network",
+                            "three_d_secure",
+                            "brand",
+                            "exp_year",
+                            "fingerprint",
+                            "funding",
+                            "installments",
+                            "wallet"
+                          ],
+                          "type": "object"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "card",
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "receipt_email": {},
+                    "receipt_number": {},
+                    "receipt_url": {
+                      "type": "string"
+                    },
+                    "refunded": {
+                      "type": "boolean"
+                    },
+                    "refunds": {
+                      "properties": {
+                        "data": {
+                          "items": {},
+                          "type": "array"
+                        },
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "object": {
+                          "type": "string"
+                        },
+                        "total_count": {
+                          "type": "integer"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "total_count",
+                        "url",
+                        "object",
+                        "data",
+                        "has_more"
+                      ],
+                      "type": "object"
+                    },
+                    "review": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "shipping": {},
+                    "source": {
+                      "properties": {
+                        "address_city": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_country": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_line1": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_line1_check": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_line2": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_state": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_zip": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "address_zip_check": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "brand": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "customer": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "cvc_check": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "dynamic_last4": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "exp_month": {
+                          "type": "integer"
+                        },
+                        "exp_year": {
+                          "type": "integer"
+                        },
+                        "fingerprint": {
+                          "type": "string"
+                        },
+                        "funding": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "last4": {
+                          "type": "string"
+                        },
+                        "metadata": {
+                          "type": "object"
+                        },
+                        "name": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "object": {
+                          "type": "string"
+                        },
+                        "tokenization_method": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "address_city",
+                        "country",
+                        "dynamic_last4",
+                        "exp_month",
+                        "funding",
+                        "metadata",
+                        "address_zip",
+                        "customer",
+                        "cvc_check",
+                        "object",
+                        "address_country",
+                        "brand",
+                        "exp_year",
+                        "name",
+                        "fingerprint",
+                        "last4",
+                        "id",
+                        "address_line1",
+                        "address_line1_check",
+                        "address_line2",
+                        "address_state",
+                        "address_zip_check",
+                        "tokenization_method"
+                      ],
+                      "type": "object"
+                    },
+                    "source_transfer": {},
+                    "statement_descriptor": {},
+                    "statement_descriptor_suffix": {},
+                    "status": {
+                      "type": "string"
+                    },
+                    "transfer_data": {},
+                    "transfer_group": {}
+                  },
+                  "required": [
+                    "amount_captured",
+                    "receipt_number",
+                    "receipt_url",
+                    "source_transfer",
+                    "statement_descriptor_suffix",
+                    "transfer_data",
+                    "amount",
+                    "dispute",
+                    "disputed",
+                    "fraud_details",
+                    "livemode",
+                    "metadata",
+                    "order",
+                    "shipping",
+                    "billing_details",
+                    "customer",
+                    "payment_method",
+                    "transfer_group",
+                    "amount_refunded",
+                    "refunded",
+                    "review",
+                    "created",
+                    "balance_transaction",
+                    "on_behalf_of",
+                    "outcome",
+                    "statement_descriptor",
+                    "status",
+                    "application",
+                    "calculated_statement_descriptor",
+                    "captured",
+                    "failure_message",
+                    "receipt_email",
+                    "refunds",
+                    "application_fee_amount",
+                    "object",
+                    "paid",
+                    "payment_intent",
+                    "id",
+                    "currency",
+                    "description",
+                    "destination",
+                    "failure_code",
+                    "invoice",
+                    "payment_method_details",
+                    "source",
+                    "application_fee"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "object"
+              ],
+              "type": "object"
+            },
+            "id": {
+              "type": "string"
+            },
+            "livemode": {
+              "type": "boolean"
+            },
+            "object": {
+              "type": "string"
+            },
+            "pending_webhooks": {
+              "type": "integer"
+            },
+            "request": {
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "idempotency_key": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "idempotency_key"
+              ],
+              "type": "object"
+            },
+            "type": {
+              "enum": [
+                "charge.succeeded"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "type",
+            "object",
+            "api_version",
+            "created",
+            "data",
+            "livemode",
+            "pending_webhooks",
+            "request"
+          ],
+          "type": "object"
+        },
+        "name": {
+          "description": "The unique name of the event",
+          "enum": [
+            "stripe/charge.succeeded"
+          ],
+          "type": "string"
+        },
+        "ts": {
+          "description": "The epoch of the event, in milliseconds",
+          "type": "number"
+        },
+        "user": {
+          "description": "User information for the author of the event",
+          "properties": {
+            "email": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "v": {
+          "description": "An optional event version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "data",
+        "user"
+      ],
+      "type": "object"
+    },
+    "typescript": "export const UserReport = {\n  FRAUDULENT: \"fraudulent\",\n  SAFE: \"safe\",\n} as const;\nexport type UserReport = typeof UserReport[keyof typeof UserReport];\n\nexport interface InngestEvent {\n  name: \"stripe/charge.succeeded\";\n  data: {\n    id: string;\n    type: \"charge.succeeded\";\n    object: string;\n    api_version: string;\n    created: number;\n    data: {\n      object: {\n        amount_captured: number;\n        receipt_number: unknown;\n        receipt_url: string;\n        source_transfer: unknown;\n        statement_descriptor_suffix: unknown;\n        transfer_data: unknown;\n        amount: number;\n        dispute: unknown;\n        disputed: boolean;\n        fraud_details: {\n          stripe_report?: \"fraudulent\";\n          user_report?: UserReport;\n        };\n        livemode: boolean;\n        metadata: {};\n        order: string | null;\n        shipping: unknown;\n        billing_details: {\n          address: {\n            city: string | null;\n            country: string | null;\n            line1: string | null;\n            line2: string | null;\n            postal_code: string | null;\n            state: string | null;\n          };\n          email: string | null;\n          name: string | null;\n          phone: string | null;\n        };\n        customer: string | null;\n        payment_method: string;\n        transfer_group: unknown;\n        amount_refunded: number;\n        refunded: boolean;\n        review: string | null;\n        created: number;\n        balance_transaction: string | null;\n        on_behalf_of: unknown;\n        outcome: {\n          seller_message: string;\n          type: string;\n          network_status: string;\n          reason: string | null;\n          risk_level: string;\n          risk_score: number;\n        };\n        statement_descriptor: unknown;\n        status: string;\n        application: unknown;\n        calculated_statement_descriptor: string;\n        captured: boolean;\n        failure_message: string | null;\n        receipt_email: unknown;\n        refunds: {\n          total_count: number;\n          url: string;\n          object: string;\n          data: Array\u003cunknown\u003e;\n          has_more: boolean;\n        };\n        application_fee_amount: unknown;\n        object: string;\n        paid: boolean;\n        payment_intent: unknown;\n        id: string;\n        currency: string;\n        description: string;\n        destination: unknown;\n        failure_code: unknown;\n        invoice: unknown;\n        payment_method_details: {\n          card: {\n            checks: {\n              address_line1_check: unknown;\n              address_postal_code_check: unknown;\n              cvc_check: unknown;\n            };\n            country: string;\n            exp_month: number;\n            last4: string;\n            network: string;\n            three_d_secure: unknown;\n            brand: string;\n            exp_year: number;\n            fingerprint: string;\n            funding: string;\n            installments: unknown;\n            wallet: unknown;\n          };\n          type: string;\n        };\n        source: {\n          address_city: string | null;\n          country: string;\n          dynamic_last4: string | null;\n          exp_month: number;\n          funding: string;\n          metadata: {};\n          address_zip: string | null;\n          customer: string | null;\n          cvc_check: string | null;\n          object: string;\n          address_country: string | null;\n          brand: string;\n          exp_year: number;\n          name: string | null;\n          fingerprint: string;\n          last4: string;\n          id: string;\n          address_line1: string | null;\n          address_line1_check: string | null;\n          address_line2: string | null;\n          address_state: string | null;\n          address_zip_check: string | null;\n          tokenization_method: string | null;\n        };\n        application_fee: unknown;\n      };\n    };\n    livemode: boolean;\n    pending_webhooks: number;\n    request: {\n      id: string;\n      idempotency_key: string;\n    };\n  };\n  user: {\n    email?: string;\n  };\n  v?: string;\n  ts?: number;\n};\n",
+    "examples": [
+      {
+        "data": {
+          "api_version": "2020-08-27",
+          "created": 1645652691,
+          "data": {
+            "object": {
+              "amount": 100,
+              "amount_captured": 0,
+              "amount_refunded": 0,
+              "application": null,
+              "application_fee": null,
+              "application_fee_amount": null,
+              "balance_transaction": null,
+              "billing_details": {
+                "address": {
+                  "city": null,
+                  "country": null,
+                  "line1": null,
+                  "line2": null,
+                  "postal_code": null,
+                  "state": null
+                },
+                "email": null,
+                "name": null,
+                "phone": null
+              },
+              "calculated_statement_descriptor": "",
+              "captured": false,
+              "created": 1645652691,
+              "currency": "usd",
+              "customer": null,
+              "description": "",
+              "destination": null,
+              "dispute": null,
+              "disputed": false,
+              "failure_code": null,
+              "failure_message": null,
+              "fraud_details": {},
+              "id": "ch_3KWSdjJKEym2H9Vg0qAid6Vb",
+              "invoice": null,
+              "livemode": false,
+              "metadata": {},
+              "object": "charge",
+              "on_behalf_of": null,
+              "order": null,
+              "outcome": {
+                "network_status": "approved_by_network",
+                "reason": null,
+                "risk_level": "normal",
+                "risk_score": 31,
+                "seller_message": "Payment complete.",
+                "type": "authorized"
+              },
+              "paid": true,
+              "payment_intent": null,
+              "payment_method": "card_1KWSdjJKEym2H9Vg5nVjO98Q",
+              "payment_method_details": {
+                "card": {
+                  "brand": "visa",
+                  "checks": {
+                    "address_line1_check": null,
+                    "address_postal_code_check": null,
+                    "cvc_check": null
+                  },
+                  "country": "US",
+                  "exp_month": 2,
+                  "exp_year": 2023,
+                  "fingerprint": "Te4OI5BJL6MnK9Ey",
+                  "funding": "credit",
+                  "installments": null,
+                  "last4": "4242",
+                  "network": "visa",
+                  "three_d_secure": null,
+                  "wallet": null
+                },
+                "type": "card"
+              },
+              "receipt_email": null,
+              "receipt_number": null,
+              "receipt_url": "https://pay.stripe.com/receipts/...",
+              "refunded": false,
+              "refunds": {
+                "data": null,
+                "has_more": false,
+                "object": "list",
+                "total_count": 0,
+                "url": "/v1/charges/ch_3KWSdjJKEym2H9Vg0qAid6Vb/refunds"
+              },
+              "review": null,
+              "shipping": null,
+              "source": {
+                "address_city": null,
+                "address_country": null,
+                "address_line1": null,
+                "address_line1_check": null,
+                "address_line2": null,
+                "address_state": null,
+                "address_zip": null,
+                "address_zip_check": null,
+                "brand": "Visa",
+                "country": "US",
+                "customer": null,
+                "cvc_check": null,
+                "dynamic_last4": null,
+                "exp_month": 2,
+                "exp_year": 2023,
+                "fingerprint": "Te4OI5BJL6MnK9Ey",
+                "funding": "credit",
+                "id": "card_1KWSdjJKEym2H9Vg5nVjO98Q",
+                "last4": "4242",
+                "metadata": {},
+                "name": null,
+                "object": "card",
+                "tokenization_method": null
+              },
+              "source_transfer": null,
+              "statement_descriptor": null,
+              "statement_descriptor_suffix": null,
+              "status": "succeeded",
+              "transfer_data": null,
+              "transfer_group": null
+            }
+          },
+          "id": "evt_3KWSdjJKEym2H9Vg0VTPKkfD",
+          "livemode": false,
+          "object": "event",
+          "pending_webhooks": 1,
+          "request": {
+            "id": "req_fuQl3aU6rajYFa",
+            "idempotency_key": "717c61b7-0203-4d47-944a-142bc61cdb44"
+          },
+          "type": "charge.succeeded"
+        },
+        "name": "stripe/charge.succeeded",
+        "ts": 1645652691000
       }
     ]
   },
@@ -7282,11 +8001,11 @@
     "typescript": "export interface InngestEvent {\n  name: \"github/workflow_run\";\n  data: {\n    action: string;\n    workflow_run: {\n      name: string;\n      status: string;\n      conclusion: string;\n      head_branch: string;\n      html_url: string;\n      check_suite_url: string;\n      workflow_url: string;\n      run_number: number;\n      workflow_id: number;\n      pull_requests: Array\u003cunknown\u003e;\n      run_attempt: number;\n      check_suite_node_id: string;\n      previous_attempt_url: unknown;\n      run_started_at: string;\n      rerun_url: string;\n      head_commit: {\n        id: string;\n        tree_id: string;\n        message: string;\n        timestamp: string;\n        author: {\n          name: string;\n          email: string;\n        };\n        committer: {\n          name: string;\n          email: string;\n        };\n      };\n      head_repository: {\n        full_name: string;\n        html_url: string;\n        assignees_url: string;\n        git_tags_url: string;\n        git_refs_url: string;\n        archive_url: string;\n        node_id: string;\n        keys_url: string;\n        collaborators_url: string;\n        teams_url: string;\n        hooks_url: string;\n        branches_url: string;\n        compare_url: string;\n        private: boolean;\n        forks_url: string;\n        issue_events_url: string;\n        issue_comment_url: string;\n        labels_url: string;\n        description: unknown;\n        events_url: string;\n        commits_url: string;\n        pulls_url: string;\n        notifications_url: string;\n        fork: boolean;\n        blobs_url: string;\n        languages_url: string;\n        contents_url: string;\n        merges_url: string;\n        issues_url: string;\n        owner: {\n          gists_url: string;\n          starred_url: string;\n          type: string;\n          node_id: string;\n          avatar_url: string;\n          url: string;\n          html_url: string;\n          login: string;\n          site_admin: boolean;\n          repos_url: string;\n          events_url: string;\n          gravatar_id: string;\n          followers_url: string;\n          following_url: string;\n          organizations_url: string;\n          id: number;\n          subscriptions_url: string;\n          received_events_url: string;\n        };\n        trees_url: string;\n        statuses_url: string;\n        comments_url: string;\n        downloads_url: string;\n        releases_url: string;\n        deployments_url: string;\n        subscription_url: string;\n        milestones_url: string;\n        git_commits_url: string;\n        id: number;\n        name: string;\n        url: string;\n        tags_url: string;\n        stargazers_url: string;\n        contributors_url: string;\n        subscribers_url: string;\n      };\n      repository: {\n        hooks_url: string;\n        issue_events_url: string;\n        assignees_url: string;\n        statuses_url: string;\n        languages_url: string;\n        milestones_url: string;\n        private: boolean;\n        branches_url: string;\n        blobs_url: string;\n        id: number;\n        keys_url: string;\n        subscribers_url: string;\n        commits_url: string;\n        compare_url: string;\n        merges_url: string;\n        owner: {\n          login: string;\n          avatar_url: string;\n          following_url: string;\n          organizations_url: string;\n          repos_url: string;\n          received_events_url: string;\n          site_admin: boolean;\n          id: number;\n          gravatar_id: string;\n          starred_url: string;\n          node_id: string;\n          gists_url: string;\n          subscriptions_url: string;\n          type: string;\n          url: string;\n          html_url: string;\n          followers_url: string;\n          events_url: string;\n        };\n        description: unknown;\n        collaborators_url: string;\n        stargazers_url: string;\n        comments_url: string;\n        labels_url: string;\n        archive_url: string;\n        node_id: string;\n        fork: boolean;\n        forks_url: string;\n        teams_url: string;\n        tags_url: string;\n        subscription_url: string;\n        git_commits_url: string;\n        downloads_url: string;\n        notifications_url: string;\n        releases_url: string;\n        name: string;\n        full_name: string;\n        events_url: string;\n        git_tags_url: string;\n        trees_url: string;\n        contributors_url: string;\n        deployments_url: string;\n        html_url: string;\n        url: string;\n        git_refs_url: string;\n        issue_comment_url: string;\n        contents_url: string;\n        issues_url: string;\n        pulls_url: string;\n      };\n      event: string;\n      check_suite_id: number;\n      updated_at: string;\n      jobs_url: string;\n      logs_url: string;\n      created_at: string;\n      id: number;\n      head_sha: string;\n      url: string;\n      artifacts_url: string;\n      cancel_url: string;\n      node_id: string;\n    };\n    repository: {\n      url: string;\n      pulls_url: string;\n      mirror_url: unknown;\n      collaborators_url: string;\n      teams_url: string;\n      stargazers_url: string;\n      comments_url: string;\n      updated_at: string;\n      clone_url: string;\n      archived: boolean;\n      visibility: string;\n      hooks_url: string;\n      assignees_url: string;\n      git_refs_url: string;\n      issues_url: string;\n      has_issues: boolean;\n      id: number;\n      contributors_url: string;\n      issue_comment_url: string;\n      pushed_at: string;\n      svn_url: string;\n      name: string;\n      fork: boolean;\n      keys_url: string;\n      events_url: string;\n      html_url: string;\n      description: unknown;\n      subscription_url: string;\n      size: number;\n      license: unknown;\n      allow_forking: boolean;\n      node_id: string;\n      blobs_url: string;\n      subscribers_url: string;\n      commits_url: string;\n      full_name: string;\n      private: boolean;\n      milestones_url: string;\n      labels_url: string;\n      is_template: boolean;\n      has_downloads: boolean;\n      issue_events_url: string;\n      languages_url: string;\n      git_commits_url: string;\n      contents_url: string;\n      compare_url: string;\n      merges_url: string;\n      deployments_url: string;\n      forks_count: number;\n      topics: Array\u003cunknown\u003e;\n      default_branch: string;\n      downloads_url: string;\n      open_issues_count: number;\n      watchers: number;\n      forks_url: string;\n      tags_url: string;\n      watchers_count: number;\n      disabled: boolean;\n      has_pages: boolean;\n      branches_url: string;\n      archive_url: string;\n      notifications_url: string;\n      releases_url: string;\n      ssh_url: string;\n      stargazers_count: number;\n      has_projects: boolean;\n      forks: number;\n      open_issues: number;\n      language: string;\n      owner: {\n        site_admin: boolean;\n        gravatar_id: string;\n        repos_url: string;\n        type: string;\n        followers_url: string;\n        starred_url: string;\n        received_events_url: string;\n        avatar_url: string;\n        url: string;\n        html_url: string;\n        id: number;\n        gists_url: string;\n        subscriptions_url: string;\n        organizations_url: string;\n        events_url: string;\n        login: string;\n        node_id: string;\n        following_url: string;\n      };\n      git_tags_url: string;\n      trees_url: string;\n      statuses_url: string;\n      created_at: string;\n      git_url: string;\n      homepage: unknown;\n      has_wiki: boolean;\n    };\n    organization: {\n      members_url: string;\n      login: string;\n      url: string;\n      repos_url: string;\n      events_url: string;\n      public_members_url: string;\n      avatar_url: string;\n      description: string;\n      id: number;\n      node_id: string;\n      hooks_url: string;\n      issues_url: string;\n    };\n    sender: {\n      url: string;\n      html_url: string;\n      followers_url: string;\n      events_url: string;\n      site_admin: boolean;\n      starred_url: string;\n      subscriptions_url: string;\n      organizations_url: string;\n      type: string;\n      gravatar_id: string;\n      gists_url: string;\n      received_events_url: string;\n      login: string;\n      id: number;\n      node_id: string;\n      avatar_url: string;\n      following_url: string;\n      repos_url: string;\n    };\n    workflow: {\n      html_url: string;\n      node_id: string;\n      name: string;\n      path: string;\n      state: string;\n      created_at: string;\n      id: number;\n      updated_at: string;\n      url: string;\n      badge_url: string;\n    };\n  };\n  user: {};\n  v?: string;\n  ts?: number;\n};\n"
   },
   {
-    "name": "stripe/charge.succeeded",
+    "name": "stripe/charge.failed",
     "integration": "stripe",
-    "description": "Sent when a charge completes successfully in your account",
+    "description": "Sent when a failed charge attempt occurs",
     "version": "",
-    "cue": "{\n  // The unique name of the event\n  name: \"stripe/charge.succeeded\"\n  // The event payload, containing all event data\n  data: {\n    id:          string\n    type:        \"charge.succeeded\"\n    object:      string\n    api_version: string\n    created:     int\n    data: {\n      object: {\n        amount_captured:             int\n        receipt_number:              _\n        receipt_url:                 string\n        source_transfer:             _\n        statement_descriptor_suffix: _\n        transfer_data:               _\n        amount:                      int\n        dispute:                     _\n        disputed:                    bool\n        fraud_details: {\n          stripe_report?: \"fraudulent\"\n          user_report?:   \"fraudulent\" | \"safe\"\n        }\n        livemode: bool\n        metadata: {}\n        // The ID of the order for this charge, if one eixsts.\n        order:    string | null\n        shipping: _\n        billing_details: {\n          address: {\n            city:        string | null\n            country:     string | null\n            line1:       string | null\n            line2:       string | null\n            postal_code: string | null\n            state:       string | null\n          }\n          email: string | null\n          name:  string | null\n          phone: string | null\n        }\n        // The stripe ID of the customer for this charge, if one exists.\n        customer:            string | null\n        payment_method:      string\n        transfer_group:      _\n        amount_refunded:     int\n        refunded:            bool\n        review:              string | null\n        created:             int\n        balance_transaction: string | null\n        on_behalf_of:        _\n        outcome: {\n          seller_message: string\n          type:           string\n          network_status: string\n          reason:         _\n          risk_level:     string\n          risk_score:     int\n        }\n        statement_descriptor:            _\n        status:                          string\n        application:                     _\n        calculated_statement_descriptor: string\n        captured:                        bool\n        // The error message explaining the reason for failure, if failed\n        failure_message: string | null\n        receipt_email:   _\n        refunds: {\n          total_count: int\n          url:         string\n          object:      string\n          data: [...]\n          has_more: bool\n        }\n        application_fee_amount: _\n        object:                 string\n        paid:                   bool\n        payment_intent:         _\n        id:                     string\n        currency:               string\n        description:            string\n        destination:            _\n        failure_code:           _\n        invoice:                _\n        payment_method_details: {\n          card: {\n            checks: {\n              address_line1_check:       _\n              address_postal_code_check: _\n              cvc_check:                 _\n            }\n            country:        string\n            exp_month:      int\n            last4:          string\n            network:        string\n            three_d_secure: _\n            brand:          string\n            exp_year:       int\n            fingerprint:    string\n            funding:        string\n            installments:   _\n            wallet:         _\n          }\n          type: string\n        }\n        source: {\n          address_city:  string | null\n          country:       string\n          dynamic_last4: string | null\n          exp_month:     int\n          funding:       string\n          metadata: {}\n          address_zip:         string | null\n          customer:            string | null\n          cvc_check:           string | null\n          object:              string\n          address_country:     string | null\n          brand:               string\n          exp_year:            int\n          name:                string | null\n          fingerprint:         string\n          last4:               string\n          id:                  string\n          address_line1:       string | null\n          address_line1_check: string | null\n          address_line2:       string | null\n          address_state:       string | null\n          address_zip_check:   string | null\n          tokenization_method: string | null\n        }\n        application_fee: _\n      }\n    }\n    livemode:         bool\n    pending_webhooks: int\n    request: {\n      id:              string\n      idempotency_key: string\n    }\n  }\n  // User information for the author of the event\n  user: {\n    email?: string\n  }\n\n  // An optional event version\n  v?: string\n\n  // The epoch of the event, in milliseconds\n  ts?: number\n}",
+    "cue": "{\n  // The unique name of the event\n  name: \"stripe/charge.failed\"\n  // The event payload, containing all event data\n  data: {\n    pending_webhooks: int\n    type:             string\n    id:               string\n    api_version:      string\n    created:          int\n    request: {\n      id:              string\n      idempotency_key: string\n    }\n    object: string\n    data: {\n      object: {\n        description: string\n        invoice:     string | null\n        order:       string | null\n        refunds: {\n          url:    string\n          object: string\n          data: [...]\n          has_more:    bool\n          total_count: int\n        }\n        review:                 string | null\n        statement_descriptor:   _\n        application_fee_amount: _\n        billing_details: {\n          address: {\n            city:        string | null\n            country:     string | null\n            line1:       string | null\n            line2:       string | null\n            postal_code: string | null\n            state:       string | null\n          }\n          email: string | null\n          name:  string | null\n          phone: string | null\n        }\n        captured: bool\n        paid:     bool\n        source: {\n          country:             string\n          last4:               string\n          id:                  string\n          object:              string\n          address_city:        string | null\n          address_line2:       string | null\n          address_state:       string | null\n          address_zip_check:   string | null\n          address_line1:       string | null\n          cvc_check:           string | null\n          dynamic_last4:       string | null\n          exp_month:           int\n          name:                string | null\n          tokenization_method: string | null\n          address_line1_check: string | null\n          address_zip:         string | null\n          customer:            string | null\n          exp_year:            int\n          fingerprint:         string\n          metadata: {}\n          address_country: string | null\n          brand:           string\n          funding:         string\n        }\n        statement_descriptor_suffix: _\n        id:                          string\n        application_fee:             _\n        destination:                 _\n        receipt_url:                 _\n        refunded:                    bool\n        status:                      string\n        object:                      string\n        created:                     int\n        fraud_details: {}\n        livemode: bool\n        metadata: {}\n        payment_method:                  string\n        receipt_number:                  _\n        currency:                        string\n        failure_balance_transaction:     _\n        amount_refunded:                 int\n        calculated_statement_descriptor: string\n        outcome: {\n          risk_score:     int\n          seller_message: string\n          type:           string\n          network_status: string\n          reason:         string\n          risk_level:     string\n        }\n        payment_method_details: {\n          card: {\n            three_d_secure: _\n            brand:          string\n            exp_year:       int\n            installments:   _\n            network:        string\n            funding:        string\n            last4:          string\n            mandate:        _\n            wallet:         _\n            checks: {\n              address_postal_code_check: _\n              cvc_check:                 _\n              address_line1_check:       _\n            }\n            country:     string\n            exp_month:   int\n            fingerprint: string\n          }\n          type: string\n        }\n        receipt_email:       _\n        transfer_group:      _\n        amount:              int\n        amount_captured:     int\n        on_behalf_of:        _\n        customer:            _\n        dispute:             _\n        failure_message:     string\n        payment_intent:      _\n        transfer_data:       _\n        application:         _\n        balance_transaction: _\n        shipping:            _\n        source_transfer:     _\n        disputed:            bool\n        failure_code:        string\n      }\n    }\n    livemode: bool\n  }\n  // User information for the author of the event\n  user: {\n    email?: string\n  }\n\n  // An optional event version\n  v?: string\n\n  // The epoch of the event, in milliseconds\n  ts?: number\n}",
     "schema": {
       "properties": {
         "data": {
@@ -7314,10 +8033,7 @@
                     "application": {},
                     "application_fee": {},
                     "application_fee_amount": {},
-                    "balance_transaction": {
-                      "nullable": true,
-                      "type": "string"
-                    },
+                    "balance_transaction": {},
                     "billing_details": {
                       "properties": {
                         "address": {
@@ -7390,11 +8106,7 @@
                     "currency": {
                       "type": "string"
                     },
-                    "customer": {
-                      "description": "The stripe ID of the customer for this charge, if one exists.",
-                      "nullable": true,
-                      "type": "string"
-                    },
+                    "customer": {},
                     "description": {
                       "type": "string"
                     },
@@ -7403,34 +8115,23 @@
                     "disputed": {
                       "type": "boolean"
                     },
-                    "failure_code": {},
+                    "failure_balance_transaction": {},
+                    "failure_code": {
+                      "type": "string"
+                    },
                     "failure_message": {
-                      "description": "The error message explaining the reason for failure, if failed",
-                      "nullable": true,
                       "type": "string"
                     },
                     "fraud_details": {
-                      "properties": {
-                        "stripe_report": {
-                          "enum": [
-                            "fraudulent"
-                          ],
-                          "type": "string"
-                        },
-                        "user_report": {
-                          "enum": [
-                            "fraudulent",
-                            "safe"
-                          ],
-                          "type": "string"
-                        }
-                      },
                       "type": "object"
                     },
                     "id": {
                       "type": "string"
                     },
-                    "invoice": {},
+                    "invoice": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "livemode": {
                       "type": "boolean"
                     },
@@ -7442,7 +8143,6 @@
                     },
                     "on_behalf_of": {},
                     "order": {
-                      "description": "The ID of the order for this charge, if one eixsts.",
                       "nullable": true,
                       "type": "string"
                     },
@@ -7451,7 +8151,9 @@
                         "network_status": {
                           "type": "string"
                         },
-                        "reason": {},
+                        "reason": {
+                          "type": "string"
+                        },
                         "risk_level": {
                           "type": "string"
                         },
@@ -7466,12 +8168,12 @@
                         }
                       },
                       "required": [
+                        "risk_score",
                         "seller_message",
                         "type",
                         "network_status",
                         "reason",
-                        "risk_level",
-                        "risk_score"
+                        "risk_level"
                       ],
                       "type": "object"
                     },
@@ -7496,9 +8198,9 @@
                                 "cvc_check": {}
                               },
                               "required": [
-                                "address_line1_check",
                                 "address_postal_code_check",
-                                "cvc_check"
+                                "cvc_check",
+                                "address_line1_check"
                               ],
                               "type": "object"
                             },
@@ -7521,6 +8223,7 @@
                             "last4": {
                               "type": "string"
                             },
+                            "mandate": {},
                             "network": {
                               "type": "string"
                             },
@@ -7528,18 +8231,19 @@
                             "wallet": {}
                           },
                           "required": [
-                            "checks",
-                            "country",
-                            "exp_month",
-                            "last4",
-                            "network",
                             "three_d_secure",
                             "brand",
                             "exp_year",
-                            "fingerprint",
-                            "funding",
                             "installments",
-                            "wallet"
+                            "network",
+                            "funding",
+                            "last4",
+                            "mandate",
+                            "wallet",
+                            "checks",
+                            "country",
+                            "exp_month",
+                            "fingerprint"
                           ],
                           "type": "object"
                         },
@@ -7555,9 +8259,7 @@
                     },
                     "receipt_email": {},
                     "receipt_number": {},
-                    "receipt_url": {
-                      "type": "string"
-                    },
+                    "receipt_url": {},
                     "refunded": {
                       "type": "boolean"
                     },
@@ -7581,11 +8283,11 @@
                         }
                       },
                       "required": [
-                        "total_count",
                         "url",
                         "object",
                         "data",
-                        "has_more"
+                        "has_more",
+                        "total_count"
                       ],
                       "type": "object"
                     },
@@ -7680,29 +8382,29 @@
                         }
                       },
                       "required": [
-                        "address_city",
                         "country",
-                        "dynamic_last4",
-                        "exp_month",
-                        "funding",
-                        "metadata",
-                        "address_zip",
-                        "customer",
-                        "cvc_check",
-                        "object",
-                        "address_country",
-                        "brand",
-                        "exp_year",
-                        "name",
-                        "fingerprint",
                         "last4",
                         "id",
-                        "address_line1",
-                        "address_line1_check",
+                        "object",
+                        "address_city",
                         "address_line2",
                         "address_state",
                         "address_zip_check",
-                        "tokenization_method"
+                        "address_line1",
+                        "cvc_check",
+                        "dynamic_last4",
+                        "exp_month",
+                        "name",
+                        "tokenization_method",
+                        "address_line1_check",
+                        "address_zip",
+                        "customer",
+                        "exp_year",
+                        "fingerprint",
+                        "metadata",
+                        "address_country",
+                        "brand",
+                        "funding"
                       ],
                       "type": "object"
                     },
@@ -7716,52 +8418,53 @@
                     "transfer_group": {}
                   },
                   "required": [
-                    "amount_captured",
-                    "receipt_number",
-                    "receipt_url",
-                    "source_transfer",
+                    "description",
+                    "invoice",
+                    "order",
+                    "refunds",
+                    "review",
+                    "statement_descriptor",
+                    "application_fee_amount",
+                    "billing_details",
+                    "captured",
+                    "paid",
+                    "source",
                     "statement_descriptor_suffix",
-                    "transfer_data",
-                    "amount",
-                    "dispute",
-                    "disputed",
+                    "id",
+                    "application_fee",
+                    "destination",
+                    "receipt_url",
+                    "refunded",
+                    "status",
+                    "object",
+                    "created",
                     "fraud_details",
                     "livemode",
                     "metadata",
-                    "order",
-                    "shipping",
-                    "billing_details",
-                    "customer",
                     "payment_method",
-                    "transfer_group",
-                    "amount_refunded",
-                    "refunded",
-                    "review",
-                    "created",
-                    "balance_transaction",
-                    "on_behalf_of",
-                    "outcome",
-                    "statement_descriptor",
-                    "status",
-                    "application",
-                    "calculated_statement_descriptor",
-                    "captured",
-                    "failure_message",
-                    "receipt_email",
-                    "refunds",
-                    "application_fee_amount",
-                    "object",
-                    "paid",
-                    "payment_intent",
-                    "id",
+                    "receipt_number",
                     "currency",
-                    "description",
-                    "destination",
-                    "failure_code",
-                    "invoice",
+                    "failure_balance_transaction",
+                    "amount_refunded",
+                    "calculated_statement_descriptor",
+                    "outcome",
                     "payment_method_details",
-                    "source",
-                    "application_fee"
+                    "receipt_email",
+                    "transfer_group",
+                    "amount",
+                    "amount_captured",
+                    "on_behalf_of",
+                    "customer",
+                    "dispute",
+                    "failure_message",
+                    "payment_intent",
+                    "transfer_data",
+                    "application",
+                    "balance_transaction",
+                    "shipping",
+                    "source_transfer",
+                    "disputed",
+                    "failure_code"
                   ],
                   "type": "object"
                 }
@@ -7799,29 +8502,26 @@
               "type": "object"
             },
             "type": {
-              "enum": [
-                "charge.succeeded"
-              ],
               "type": "string"
             }
           },
           "required": [
-            "id",
+            "pending_webhooks",
             "type",
-            "object",
+            "id",
             "api_version",
             "created",
+            "request",
+            "object",
             "data",
-            "livemode",
-            "pending_webhooks",
-            "request"
+            "livemode"
           ],
           "type": "object"
         },
         "name": {
           "description": "The unique name of the event",
           "enum": [
-            "stripe/charge.succeeded"
+            "stripe/charge.failed"
           ],
           "type": "string"
         },
@@ -7850,144 +8550,6 @@
       ],
       "type": "object"
     },
-    "typescript": "export const UserReport = {\n  FRAUDULENT: \"fraudulent\",\n  SAFE: \"safe\",\n} as const;\nexport type UserReport = typeof UserReport[keyof typeof UserReport];\n\nexport interface InngestEvent {\n  name: \"stripe/charge.succeeded\";\n  data: {\n    id: string;\n    type: \"charge.succeeded\";\n    object: string;\n    api_version: string;\n    created: number;\n    data: {\n      object: {\n        amount_captured: number;\n        receipt_number: unknown;\n        receipt_url: string;\n        source_transfer: unknown;\n        statement_descriptor_suffix: unknown;\n        transfer_data: unknown;\n        amount: number;\n        dispute: unknown;\n        disputed: boolean;\n        fraud_details: {\n          stripe_report?: \"fraudulent\";\n          user_report?: UserReport;\n        };\n        livemode: boolean;\n        metadata: {};\n        order: string | null;\n        shipping: unknown;\n        billing_details: {\n          address: {\n            city: string | null;\n            country: string | null;\n            line1: string | null;\n            line2: string | null;\n            postal_code: string | null;\n            state: string | null;\n          };\n          email: string | null;\n          name: string | null;\n          phone: string | null;\n        };\n        customer: string | null;\n        payment_method: string;\n        transfer_group: unknown;\n        amount_refunded: number;\n        refunded: boolean;\n        review: string | null;\n        created: number;\n        balance_transaction: string | null;\n        on_behalf_of: unknown;\n        outcome: {\n          seller_message: string;\n          type: string;\n          network_status: string;\n          reason: unknown;\n          risk_level: string;\n          risk_score: number;\n        };\n        statement_descriptor: unknown;\n        status: string;\n        application: unknown;\n        calculated_statement_descriptor: string;\n        captured: boolean;\n        failure_message: string | null;\n        receipt_email: unknown;\n        refunds: {\n          total_count: number;\n          url: string;\n          object: string;\n          data: Array\u003cunknown\u003e;\n          has_more: boolean;\n        };\n        application_fee_amount: unknown;\n        object: string;\n        paid: boolean;\n        payment_intent: unknown;\n        id: string;\n        currency: string;\n        description: string;\n        destination: unknown;\n        failure_code: unknown;\n        invoice: unknown;\n        payment_method_details: {\n          card: {\n            checks: {\n              address_line1_check: unknown;\n              address_postal_code_check: unknown;\n              cvc_check: unknown;\n            };\n            country: string;\n            exp_month: number;\n            last4: string;\n            network: string;\n            three_d_secure: unknown;\n            brand: string;\n            exp_year: number;\n            fingerprint: string;\n            funding: string;\n            installments: unknown;\n            wallet: unknown;\n          };\n          type: string;\n        };\n        source: {\n          address_city: string | null;\n          country: string;\n          dynamic_last4: string | null;\n          exp_month: number;\n          funding: string;\n          metadata: {};\n          address_zip: string | null;\n          customer: string | null;\n          cvc_check: string | null;\n          object: string;\n          address_country: string | null;\n          brand: string;\n          exp_year: number;\n          name: string | null;\n          fingerprint: string;\n          last4: string;\n          id: string;\n          address_line1: string | null;\n          address_line1_check: string | null;\n          address_line2: string | null;\n          address_state: string | null;\n          address_zip_check: string | null;\n          tokenization_method: string | null;\n        };\n        application_fee: unknown;\n      };\n    };\n    livemode: boolean;\n    pending_webhooks: number;\n    request: {\n      id: string;\n      idempotency_key: string;\n    };\n  };\n  user: {\n    email?: string;\n  };\n  v?: string;\n  ts?: number;\n};\n",
-    "examples": [
-      {
-        "data": {
-          "api_version": "2020-08-27",
-          "created": 1645652691,
-          "data": {
-            "object": {
-              "amount": 100,
-              "amount_captured": 0,
-              "amount_refunded": 0,
-              "application": null,
-              "application_fee": null,
-              "application_fee_amount": null,
-              "balance_transaction": null,
-              "billing_details": {
-                "address": {
-                  "city": null,
-                  "country": null,
-                  "line1": null,
-                  "line2": null,
-                  "postal_code": null,
-                  "state": null
-                },
-                "email": null,
-                "name": null,
-                "phone": null
-              },
-              "calculated_statement_descriptor": "",
-              "captured": false,
-              "created": 1645652691,
-              "currency": "usd",
-              "customer": null,
-              "description": "",
-              "destination": null,
-              "dispute": null,
-              "disputed": false,
-              "failure_code": null,
-              "failure_message": null,
-              "fraud_details": {},
-              "id": "ch_3KWSdjJKEym2H9Vg0qAid6Vb",
-              "invoice": null,
-              "livemode": false,
-              "metadata": {},
-              "object": "charge",
-              "on_behalf_of": null,
-              "order": null,
-              "outcome": {
-                "network_status": "approved_by_network",
-                "reason": null,
-                "risk_level": "normal",
-                "risk_score": 31,
-                "seller_message": "Payment complete.",
-                "type": "authorized"
-              },
-              "paid": true,
-              "payment_intent": null,
-              "payment_method": "card_1KWSdjJKEym2H9Vg5nVjO98Q",
-              "payment_method_details": {
-                "card": {
-                  "brand": "visa",
-                  "checks": {
-                    "address_line1_check": null,
-                    "address_postal_code_check": null,
-                    "cvc_check": null
-                  },
-                  "country": "US",
-                  "exp_month": 2,
-                  "exp_year": 2023,
-                  "fingerprint": "Te4OI5BJL6MnK9Ey",
-                  "funding": "credit",
-                  "installments": null,
-                  "last4": "4242",
-                  "network": "visa",
-                  "three_d_secure": null,
-                  "wallet": null
-                },
-                "type": "card"
-              },
-              "receipt_email": null,
-              "receipt_number": null,
-              "receipt_url": "https://pay.stripe.com/receipts/...",
-              "refunded": false,
-              "refunds": {
-                "data": null,
-                "has_more": false,
-                "object": "list",
-                "total_count": 0,
-                "url": "/v1/charges/ch_3KWSdjJKEym2H9Vg0qAid6Vb/refunds"
-              },
-              "review": null,
-              "shipping": null,
-              "source": {
-                "address_city": null,
-                "address_country": null,
-                "address_line1": null,
-                "address_line1_check": null,
-                "address_line2": null,
-                "address_state": null,
-                "address_zip": null,
-                "address_zip_check": null,
-                "brand": "Visa",
-                "country": "US",
-                "customer": null,
-                "cvc_check": null,
-                "dynamic_last4": null,
-                "exp_month": 2,
-                "exp_year": 2023,
-                "fingerprint": "Te4OI5BJL6MnK9Ey",
-                "funding": "credit",
-                "id": "card_1KWSdjJKEym2H9Vg5nVjO98Q",
-                "last4": "4242",
-                "metadata": {},
-                "name": null,
-                "object": "card",
-                "tokenization_method": null
-              },
-              "source_transfer": null,
-              "statement_descriptor": null,
-              "statement_descriptor_suffix": null,
-              "status": "succeeded",
-              "transfer_data": null,
-              "transfer_group": null
-            }
-          },
-          "id": "evt_3KWSdjJKEym2H9Vg0VTPKkfD",
-          "livemode": false,
-          "object": "event",
-          "pending_webhooks": 1,
-          "request": {
-            "id": "req_fuQl3aU6rajYFa",
-            "idempotency_key": "717c61b7-0203-4d47-944a-142bc61cdb44"
-          },
-          "type": "charge.succeeded"
-        },
-        "name": "stripe/charge.succeeded",
-        "ts": 1645652691000
-      }
-    ]
+    "typescript": "export interface InngestEvent {\n  name: \"stripe/charge.failed\";\n  data: {\n    pending_webhooks: number;\n    type: string;\n    id: string;\n    api_version: string;\n    created: number;\n    request: {\n      id: string;\n      idempotency_key: string;\n    };\n    object: string;\n    data: {\n      object: {\n        description: string;\n        invoice: string | null;\n        order: string | null;\n        refunds: {\n          url: string;\n          object: string;\n          data: Array\u003cunknown\u003e;\n          has_more: boolean;\n          total_count: number;\n        };\n        review: string | null;\n        statement_descriptor: unknown;\n        application_fee_amount: unknown;\n        billing_details: {\n          address: {\n            city: string | null;\n            country: string | null;\n            line1: string | null;\n            line2: string | null;\n            postal_code: string | null;\n            state: string | null;\n          };\n          email: string | null;\n          name: string | null;\n          phone: string | null;\n        };\n        captured: boolean;\n        paid: boolean;\n        source: {\n          country: string;\n          last4: string;\n          id: string;\n          object: string;\n          address_city: string | null;\n          address_line2: string | null;\n          address_state: string | null;\n          address_zip_check: string | null;\n          address_line1: string | null;\n          cvc_check: string | null;\n          dynamic_last4: string | null;\n          exp_month: number;\n          name: string | null;\n          tokenization_method: string | null;\n          address_line1_check: string | null;\n          address_zip: string | null;\n          customer: string | null;\n          exp_year: number;\n          fingerprint: string;\n          metadata: {};\n          address_country: string | null;\n          brand: string;\n          funding: string;\n        };\n        statement_descriptor_suffix: unknown;\n        id: string;\n        application_fee: unknown;\n        destination: unknown;\n        receipt_url: unknown;\n        refunded: boolean;\n        status: string;\n        object: string;\n        created: number;\n        fraud_details: {};\n        livemode: boolean;\n        metadata: {};\n        payment_method: string;\n        receipt_number: unknown;\n        currency: string;\n        failure_balance_transaction: unknown;\n        amount_refunded: number;\n        calculated_statement_descriptor: string;\n        outcome: {\n          risk_score: number;\n          seller_message: string;\n          type: string;\n          network_status: string;\n          reason: string;\n          risk_level: string;\n        };\n        payment_method_details: {\n          card: {\n            three_d_secure: unknown;\n            brand: string;\n            exp_year: number;\n            installments: unknown;\n            network: string;\n            funding: string;\n            last4: string;\n            mandate: unknown;\n            wallet: unknown;\n            checks: {\n              address_postal_code_check: unknown;\n              cvc_check: unknown;\n              address_line1_check: unknown;\n            };\n            country: string;\n            exp_month: number;\n            fingerprint: string;\n          };\n          type: string;\n        };\n        receipt_email: unknown;\n        transfer_group: unknown;\n        amount: number;\n        amount_captured: number;\n        on_behalf_of: unknown;\n        customer: unknown;\n        dispute: unknown;\n        failure_message: string;\n        payment_intent: unknown;\n        transfer_data: unknown;\n        application: unknown;\n        balance_transaction: unknown;\n        shipping: unknown;\n        source_transfer: unknown;\n        disputed: boolean;\n        failure_code: string;\n      };\n    };\n    livemode: boolean;\n  };\n  user: {\n    email?: string;\n  };\n  v?: string;\n  ts?: number;\n};\n"
   }
 ]

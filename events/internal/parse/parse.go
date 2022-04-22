@@ -46,7 +46,7 @@ func Parse(ctx context.Context) ([]events.Event, error) {
 	for _, i := range insts {
 		// Iterate through each value within the instance (file) and parse
 		// the event.
-		e, err := walkDefinitions(i.Value())
+		e, err := walkDefinitions(i.Value(), i)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func instances(ctx context.Context) ([]*cue.Instance, error) {
 // walkDefinitions walks through each definition within a Cue instance, finds
 // every definition that contains an event schema, then parses the event schema
 // from the Cue type definition.
-func walkDefinitions(v cue.Value) ([]events.Event, error) {
+func walkDefinitions(v cue.Value, i *cue.Instance) ([]events.Event, error) {
 	events := []events.Event{}
 
 	it, err := v.Fields()
@@ -127,7 +127,7 @@ func walkDefinitions(v cue.Value) ([]events.Event, error) {
 			continue
 		}
 
-		evt, err := gen(val)
+		evt, err := gen(val, i)
 		if err != nil {
 			return nil, err
 		}
@@ -140,12 +140,22 @@ func walkDefinitions(v cue.Value) ([]events.Event, error) {
 }
 
 // gen generates a new event given the event definition as a cue.Value.
-func gen(v cue.Value) (*events.Event, error) {
+func gen(v cue.Value, i *cue.Instance) (*events.Event, error) {
 	// If the value has a field "schema", it's part of our definition.
 	sf, err := v.LookupField("schema")
 	if err != nil {
 		return nil, fmt.Errorf("unable to find schema field")
 	}
+
+	// TODO: Recursively walk the definition and see if there are any references
+	// to other cue definitions.  If so, we need to create a new instance which
+	// contains every definition to be marshalled, else the schema field will have
+	// references to undefined definitions.
+	//
+	// It would be good to be able to pass in the entire *cue.Instance of our
+	// objects, but that's not possible as we're attempting to create a JSON schema
+	// for a field in a struct _and_ JSON-schema requires a strict format to parse
+	// an instance.
 
 	schema, err := jsonschema.MarshalCueValue(sf.Value)
 	if err != nil {
@@ -204,49 +214,6 @@ func titleCaseName(name string) string {
 	name = strings.Title(name)
 	return strings.ReplaceAll(name, " ", "")
 }
-
-/*
-
-// schema generates an openAPI schema for the given schema field of an event,
-// utilizing Cue's OpenAPI integration package.
-//
-// This should be called for a single event instance.
-func schema(v cue.Value) (map[string]interface{}, error) {
-	val, err := formatValue(v, cue.Attributes(true))
-	if err != nil {
-		return nil, fmt.Errorf("error formatting instance value: %w", err)
-	}
-
-	r := &cue.Runtime{}
-	inst, err := r.Compile(".", fmt.Sprintf("#event: %s", val))
-	if err != nil {
-		return nil, fmt.Errorf("error generating inst: %w", err)
-	}
-
-	byt, err := openapi.Gen(inst, c)
-	if err != nil {
-		return nil, fmt.Errorf("error generating config: %w", err)
-	}
-
-	genned := &genned{}
-	if err := json.Unmarshal(byt, genned); err != nil {
-		return nil, fmt.Errorf("error unmarshalling genned schema: %w", err)
-	}
-
-	return genned.Components.Schemas.Event, err
-}
-
-// genned represents the generated data from Cue's openapi package.  We care
-// only about extracting the event schema from the generated package;  the
-// rest is discarded.
-type genned struct {
-	Components struct {
-		Schemas struct {
-			Event map[string]interface{}
-		}
-	}
-}
-*/
 
 // formatValue formats a given cue value as well-defined cue config.
 func formatValue(input cue.Value, opts ...cue.Option) (string, error) {
