@@ -1,0 +1,22 @@
+-- a.cue --
+{
+  mixed: string
+  nested: {
+    nested_mixed: bool
+  }
+}
+-- b.cue --
+{
+  mixed: int
+  nested: {
+    nested_mixed: float
+  }
+}
+-- expected --
+{
+  mixed: string | int
+  nested: {
+    nested_mixed: bool | float
+  }
+}
+

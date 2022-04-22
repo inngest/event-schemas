@@ -1,0 +1,41 @@
+-- a.cue --
+{
+  name:             string
+  a_str_slice:      [...string]
+  common_str_slice: [...string]
+
+  diff_slice:           [...string]
+  complex_slice:        [...{ a: string }]
+  complex_binary_slice: [...({ a: string } | string)]
+
+  // this has multiple, but b has single float.
+  multi_merge: [...string]
+}
+
+-- b.cue --
+{
+  name:             string
+  b_str_slice:      [...string]
+  common_str_slice: [...string]
+
+  diff_slice:           [...int]
+  complex_slice:        [...{ b: string }]
+  complex_binary_slice: [...int]
+
+  // attempt a slice that only has a float
+  multi_merge: [float]
+}
+
+-- expected --
+{
+  name: string
+  a_str_slice: [...string]
+  b_str_slice: [...string]
+  common_str_slice: [...string]
+
+  diff_slice:           [...string] | [...int]
+  complex_slice:        [...{ a: string }] | [...{ b: string }]
+  complex_binary_slice: [...({ a: string } | string)] | [...int]
+
+  multi_merge: [...string] | [float]
+}
