@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/inngest/event-schemas/events/marshalling"
 )
 
 const (
@@ -344,7 +346,7 @@ type Enum struct {
 	Members []AstKind
 }
 
-func (e Enum) AST() ([]*Expr, error) {
+func (e Enum) AST() ([]marshalling.Expr, error) {
 	// Create a key/value AST mapping for each member of the enum.
 	kv := make([]AstKind, len(e.Members))
 
@@ -357,8 +359,8 @@ func (e Enum) AST() ([]*Expr, error) {
 			}
 		default:
 			// Immediately return a disjunction of complex types.
-			return []*Expr{
-				{
+			return []marshalling.Expr{
+				&Expr{
 					Data: Local{
 						Kind:     LocalType,
 						Name:     e.Name,
@@ -375,8 +377,8 @@ func (e Enum) AST() ([]*Expr, error) {
 
 	}
 
-	return []*Expr{
-		{
+	return []marshalling.Expr{
+		&Expr{
 			Data: Local{
 				Kind:     LocalConst,
 				Name:     e.Name,
@@ -389,8 +391,8 @@ func (e Enum) AST() ([]*Expr, error) {
 				},
 			},
 		},
-		{Data: Lit{Value: "\n"}},
-		{
+		&Expr{Data: Lit{Value: "\n"}},
+		&Expr{
 			Data: Local{
 				Kind:     LocalType,
 				Name:     e.Name,

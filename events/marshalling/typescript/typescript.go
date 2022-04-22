@@ -8,6 +8,7 @@ import (
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/ast"
 	"cuelang.org/go/cue/format"
+	"github.com/inngest/event-schemas/events/marshalling"
 )
 
 var (
@@ -20,53 +21,22 @@ func MarshalString(cuestr string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error generating inst: %w", err)
 	}
-
 	return MarshalCueValue(inst.Value())
-
 }
 
 // MarshalCueValue returns a typescript type given a cue value.
 func MarshalCueValue(v cue.Value) (string, error) {
-	if err := v.Validate(); err != nil {
-		return "", err
-	}
-
-	// Assume that this is a top-level object containing all definitions,
-	// and iterate over each definition
-	it, err := v.Fields(cue.Definitions(true), cue.Concrete(false))
+	exprs, err := marshalling.Walk(v, generateExprs)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
-
-	exprs := []*Expr{}
-
-	for it.Next() {
-		if len(exprs) > 0 {
-			// Add two newlines between each field.
-			exprs = append(exprs, []*Expr{
-				{Data: Lit{Value: "\n"}},
-				{Data: Lit{Value: "\n"}},
-			}...)
-		}
-
-		result, err := generateExprs(context.Background(), it.Label(), it.Value())
-		if err != nil {
-			return "", err
-		}
-		exprs = append(exprs, result...)
-	}
-
-	// Add a final newline to terminate the file.
-	exprs = append(exprs, []*Expr{{Data: Lit{Value: "\n"}}}...)
-
-	str, err := FormatAST(exprs...)
-	return str, err
+	return marshalling.Format(exprs...)
 }
 
 // generateExprs creates a typescript expression for a top-level identifier.  This
 // differs to the 'generateAST' function as it wraps the created AST within an Expr,
 // representing a complete expression terminating with a semicolon.
-func generateExprs(ctx context.Context, label string, v cue.Value) ([]*Expr, error) {
+func generateExprs(ctx context.Context, label string, v cue.Value) ([]marshalling.Expr, error) {
 	label = strings.Title(strings.ToLower(label))
 
 	exprs, ast, err := generateAST(ctx, label, v)
@@ -117,14 +87,13 @@ func generateExprs(ctx context.Context, label string, v cue.Value) ([]*Expr, err
 //
 // If the value contains a field of enums, this may generate top-level expressions
 // to add to the generated typescript file.
-func generateAST(ctx context.Context, label string, v cue.Value) ([]*Expr, []AstKind, error) {
+func generateAST(ctx context.Context, label string, v cue.Value) ([]marshalling.Expr, []AstKind, error) {
 	// We have the cue's value, although this may represent many things.
 	// Notably, v.IncompleteKind() returns cue.StringKind even if this field
 	// represents a static string, a string type, or an enum of strings.
 	//
 	// In order to properly generate Typescript AST for the value we need to
 	// walk Cue's AST.
-
 	switch v.IncompleteKind() {
 	case cue.StructKind:
 		exprs, ast, err := generateStructBinding(ctx, v)
@@ -202,7 +171,7 @@ func generateScalar(ctx context.Context, label string, v cue.Value) (AstKind, er
 // Array<string>).
 //
 // This may return top-level expressions if the array contains a struct with enums.
-func generateArray(ctx context.Context, label string, v cue.Value) ([]*Expr, []AstKind, error) {
+func generateArray(ctx context.Context, label string, v cue.Value) ([]marshalling.Expr, []AstKind, error) {
 	members := []AstKind{}
 
 	// Walk the iterator for all basic values first.
@@ -249,7 +218,7 @@ func generateArray(ctx context.Context, label string, v cue.Value) ([]*Expr, []A
 	// that we end up duplicating TS type names.
 	mappedTypes := map[string]struct{}{}
 
-	exprs := []*Expr{}
+	exprs := []marshalling.Expr{}
 	for len(elts) > 0 {
 		elt := elts[0]
 		elts = elts[1:]
@@ -323,13 +292,13 @@ func generateEnum(ctx context.Context, label string, v cue.Value) ([]AstKind, er
 // It does not wrap this within a Local as this function is used within top-level
 // and nested structs;  nested structs are the Value of a KeyValue whereas
 // top-level identifiers are values of a Local.
-func generateStructBinding(ctx context.Context, v cue.Value) ([]*Expr, []AstKind, error) {
+func generateStructBinding(ctx context.Context, v cue.Value) ([]marshalling.Expr, []AstKind, error) {
 	it, err := v.Fields(cue.All())
 	if err != nil {
 		return nil, nil, err
 	}
 
-	expr := []*Expr{}
+	expr := []marshalling.Expr{}
 
 	members := []AstKind{}
 	for it.Next() {
@@ -367,9 +336,9 @@ func generateStructBinding(ctx context.Context, v cue.Value) ([]*Expr, []AstKind
 			}
 			expr = append(expr, enumAst...)
 			// Add two newlines between each enum and struct visually.
-			expr = append(expr, []*Expr{
-				{Data: Lit{Value: "\n"}},
-				{Data: Lit{Value: "\n"}},
+			expr = append(expr, []marshalling.Expr{
+				&Expr{Data: Lit{Value: "\n"}},
+				&Expr{Data: Lit{Value: "\n"}},
 			}...)
 			// Use the enum name as the key's value.
 			created[0] = Type{Value: enum.Name}
