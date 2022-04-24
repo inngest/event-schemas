@@ -228,7 +228,7 @@ NEXT:
 		// Does this match any existing struct type?
 		for _, existing := range deduped {
 			// XXX: Store these mapped to process once.
-			instB, _ := astToValue(r, existing)
+			instB, _ := cueutil.ASTToValue(r, existing)
 
 			subA := instA.Value().Subsumes(instB.Value())
 			subB := instB.Value().Subsumes(instA.Value())
