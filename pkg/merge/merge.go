@@ -6,6 +6,7 @@ import (
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/ast"
+	"cuelang.org/go/cue/token"
 	"github.com/inngest/event-schemas/pkg/cueutil"
 )
 
@@ -16,12 +17,6 @@ func Merge(ctx context.Context, a, b cue.Value) (cue.Value, error) {
 	if err != nil {
 		return merged, err
 	}
-
-	merged, err = recursivelyMerge(ctx, b, merged)
-	if err != nil {
-		return merged, err
-	}
-
 	return merged, nil
 }
 
@@ -81,7 +76,7 @@ func recursivelyMerge(ctx context.Context, a, b cue.Value) (cue.Value, error) {
 		if bValue.IncompleteKind() == cue.BottomKind {
 			// Use A immediately, as there is no field in B.  Mark this field as
 			// optional as it's only usable in one of the definitions.
-			// TODO OPTIONAL
+			aValAsField.Optional = token.Blank.Pos()
 			def.Elts = append(def.Elts, aValAsField)
 			continue
 		}
@@ -218,8 +213,9 @@ func recursivelyMerge(ctx context.Context, a, b cue.Value) (cue.Value, error) {
 		// This field isn't present in A, so it was skipped.  We can add this directly
 		// to our struct.
 		val := it.Value()
-		aValAsField := val.Source().(*ast.Field)
-		def.Elts = append(def.Elts, aValAsField)
+		field := val.Source().(*ast.Field)
+		field.Optional = token.Blank.Pos()
+		def.Elts = append(def.Elts, field)
 	}
 
 	return cueutil.ASTToValue(r, def)

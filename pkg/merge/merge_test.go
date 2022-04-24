@@ -19,7 +19,7 @@ func TestMerge(t *testing.T) {
 	require.NoError(t, err)
 
 	// Allows us to focus on a specfic test name.
-	focus := ""
+	focus := "missing_field.txtar"
 
 	for _, e := range entries {
 		t.Run(e.Name(), func(t *testing.T) {

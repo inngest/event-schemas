@@ -14,11 +14,11 @@
 }
 -- expected --
 {
-  name: string
-  another: int
+  name?: string
+  another?: int
   nested: {
-    a: bool
-    b: float
+    a?: bool
+    b?: float
   }
 }
 
