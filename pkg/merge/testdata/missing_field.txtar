@@ -1,0 +1,24 @@
+-- a.cue --
+{
+  name: string
+  nested: {
+    a: bool
+  }
+}
+-- b.cue --
+{
+  another: int
+  nested: {
+    b: float
+  }
+}
+-- expected --
+{
+  name?: string
+  another?: int
+  nested: {
+    a?: bool
+    b?: float
+  }
+}
+

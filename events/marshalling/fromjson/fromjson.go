@@ -8,6 +8,7 @@ import (
 	"cuelang.org/go/cue/ast"
 	"cuelang.org/go/cue/format"
 	"cuelang.org/go/cue/token"
+	"github.com/inngest/event-schemas/pkg/cueutil"
 )
 
 // FromJSON takes a JSON map and generates a CUE type which validates the given
@@ -222,12 +223,12 @@ NEXT:
 		// We ignore errors as this is best-effort.  Worst case we return
 		// no concrete struct definitions and use the top-level {...}
 		// struct identifier for any key/values.
-		instA, _ := astToValue(r, next)
+		instA, _ := cueutil.ASTToValue(r, next)
 
 		// Does this match any existing struct type?
 		for _, existing := range deduped {
 			// XXX: Store these mapped to process once.
-			instB, _ := astToValue(r, existing)
+			instB, _ := cueutil.ASTToValue(r, existing)
 
 			subA := instA.Value().Subsumes(instB.Value())
 			subB := instB.Value().Subsumes(instA.Value())
@@ -275,18 +276,4 @@ func kind(v interface{}) cue.Kind {
 	}
 
 	return cue.TopKind
-}
-
-func astToValue(r *cue.Runtime, ast ast.Node) (cue.Value, error) {
-	// Format the cue code.
-	byt, _ := format.Node(
-		ast,
-		format.TabIndent(false),
-		format.UseSpaces(2),
-	)
-	inst, err := r.Compile(".", byt)
-	if err != nil {
-		return cue.Value{}, err
-	}
-	return inst.Value(), nil
 }

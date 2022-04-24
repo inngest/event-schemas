@@ -9,6 +9,7 @@ require (
 	github.com/inngest/cuetypescript v0.0.0-20220302153725-a00e933fdf87
 	github.com/inngest/golorem v0.0.0-20220323014825-15bf7a53bf79
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/tools v0.0.0-20200612220849-54c614fe050c
 )
 
 require (

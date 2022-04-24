@@ -1,0 +1,12 @@
+-- a.cue --
+{
+  name: string
+}
+-- b.cue --
+{
+  name: string
+}
+-- expected --
+{
+  name: string
+}
