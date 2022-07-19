@@ -65,6 +65,11 @@ func recursivelyMerge(ctx context.Context, a, b cue.Value) (cue.Value, error) {
 		label := it.Label()
 
 		aValue := it.Value()
+
+		if aValue.Source() == nil {
+			continue
+		}
+
 		// Get the AST for the field in A, which is always an *ast.Field.
 		aValAsField := aValue.Source().(*ast.Field)
 
