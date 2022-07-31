@@ -3,11 +3,8 @@ package typescript
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"cuelang.org/go/cue"
-	"cuelang.org/go/cue/ast"
-	"cuelang.org/go/cue/format"
 	"github.com/inngest/event-schemas/events/marshalling"
 )
 
@@ -26,13 +23,17 @@ func MarshalString(cuestr string) (string, error) {
 
 // MarshalCueValue returns a typescript type given a cue value.
 func MarshalCueValue(v cue.Value) (string, error) {
-	exprs, err := marshalling.Walk(v, generateExprs)
-	if err != nil {
-		return "", nil
-	}
-	return marshalling.Format(exprs...)
+	return marshalling.Marshal(context.Background(), v, generator{})
 }
 
+type generator struct{}
+
+func (g generator) AST(ctx context.Context, ast marshalling.ParsedAST, all []marshalling.ParsedAST, exprs []marshalling.Expr) ([]marshalling.Expr, error) {
+	fmt.Printf("%#v\n", ast)
+	return nil, nil
+}
+
+/*
 // generateExprs creates a typescript expression for a top-level identifier.  This
 // differs to the 'generateAST' function as it wraps the created AST within an Expr,
 // representing a complete expression terminating with a semicolon.
@@ -413,3 +414,4 @@ func astToValue(r *cue.Runtime, ast ast.Node) (cue.Value, error) {
 	}
 	return inst.Value(), nil
 }
+*/
