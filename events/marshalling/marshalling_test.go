@@ -88,20 +88,96 @@ func TestParse(t *testing.T) {
 			expected: []ParsedAST{
 				&ParsedStruct{
 					Name: "#Person",
-					Members: map[string]ParsedAST{
-						"name": &ParsedIdent{
-							Name: "name",
-							Ident: &ast.Ident{
-								Name: "string",
+					Members: map[string]*ParsedStructField{
+						"name": &ParsedStructField{
+							ParsedAST: &ParsedIdent{
+								Name: "name",
+								Ident: &ast.Ident{
+									Name: "string",
+								},
 							},
 						},
-						"age": &ParsedIdent{
-							Name: "age",
-							Ident: &ast.Ident{
-								Name: "int",
+						"age": &ParsedStructField{
+							ParsedAST: &ParsedIdent{
+								Name: "age",
+								Ident: &ast.Ident{
+									Name: "int",
+								},
+								Default: &ParsedScalar{
+									Value: 21,
+								},
 							},
-							Default: &ParsedScalar{
-								Value: 21,
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "basic struct",
+			input: `#Nested: {
+			nested: {
+				enum: "test" | "another"
+				types: string | int
+				opt?: string
+				some: {
+					item: bool
+				}
+			}
+			title: string,
+			}`,
+			expected: []ParsedAST{
+				&ParsedStruct{
+					Name: "#Nested",
+					Members: map[string]*ParsedStructField{
+						"nested": &ParsedStructField{
+							ParsedAST: &ParsedStruct{
+								Name: "nested",
+								Members: map[string]*ParsedStructField{
+									"enum": &ParsedStructField{
+										ParsedAST: &ParsedEnum{
+											Name: "enum",
+											Members: []ParsedAST{
+												&ParsedScalar{Value: "test"},
+												&ParsedScalar{Value: "another"},
+											},
+										},
+									},
+									"types": &ParsedStructField{
+										ParsedAST: &ParsedEnum{
+											Name: "types",
+											Members: []ParsedAST{
+												&ParsedIdent{Ident: ast.NewIdent("string")},
+												&ParsedIdent{Ident: ast.NewIdent("int")},
+											},
+										},
+									},
+									"opt": &ParsedStructField{
+										ParsedAST: &ParsedIdent{
+											Name:  "opt",
+											Ident: ast.NewIdent("string"),
+										},
+										Optional: true,
+									},
+									"some": &ParsedStructField{
+										ParsedAST: &ParsedStruct{
+											Name: "some",
+											Members: map[string]*ParsedStructField{
+												"item": &ParsedStructField{
+													ParsedAST: &ParsedIdent{
+														Name:  "item",
+														Ident: ast.NewIdent("bool"),
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"title": &ParsedStructField{
+							ParsedAST: &ParsedIdent{
+								Name:  "title",
+								Ident: ast.NewIdent("string"),
 							},
 						},
 					},

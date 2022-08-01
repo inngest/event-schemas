@@ -16,7 +16,7 @@ type Generator interface {
 	//
 	// It is given the context, the current AST to generate an expr from,
 	// plus all parsed AST items and all currently generated Exprs
-	AST(context.Context, ParsedAST, []ParsedAST, []Expr) ([]Expr, error)
+	AST(context.Context, []ParsedAST) ([]Expr, error)
 }
 
 func Marshal(ctx context.Context, v cue.Value, g Generator) (string, error) {
@@ -25,15 +25,12 @@ func Marshal(ctx context.Context, v cue.Value, g Generator) (string, error) {
 		return "", err
 	}
 
-	exprs := []Expr{}
-	for _, ast := range parsed {
-		expr, err := g.AST(ctx, ast, parsed, exprs)
-		if err != nil {
-			return "", err
-		}
-		exprs = append(exprs, expr...)
+	exprs, err := g.AST(ctx, parsed)
+	if err != nil {
+		return "", err
 	}
 
+	fmt.Println(Format(exprs...))
 	return Format(exprs...)
 }
 
@@ -61,7 +58,7 @@ func Parse(ctx context.Context, v cue.Value) ([]ParsedAST, error) {
 
 	parsed := []ParsedAST{}
 	for it.Next() {
-		// TODO: Here we want to generalize the type definitions from cue into interim
+		// Here we want to generalize the type definitions from cue into interim
 		// ASTs that are easier to modify.
 		//
 		// Each language we want to implement requires doing the same thing:  inspecting
@@ -96,14 +93,14 @@ func parseAST(ctx context.Context, label string, v cue.Value) (ParsedAST, error)
 		if err != nil {
 			return nil, err
 		}
-		s.Name = label
+		s.name = label
 		return s, nil
 	case cue.ListKind:
 		arr, err := parseArray(ctx, label, v)
 		if err != nil {
 			return nil, err
 		}
-		arr.Name = label
+		arr.name = label
 		return arr, nil
 	default:
 		// We have to iterate through the actual syntax / AST of the
@@ -132,7 +129,7 @@ func parseCueSyntax(ctx context.Context, label string, v cue.Value, syn ast.Node
 			if err != nil {
 				return nil, err
 			}
-			enum.Name = label
+			enum.name = label
 			return enum, nil
 		case cue.AndOp:
 			// Although it's possible to combine two structs via the AndOp,
@@ -146,7 +143,7 @@ func parseCueSyntax(ctx context.Context, label string, v cue.Value, syn ast.Node
 			// A leaf in the binary expression could hold the default value.
 			// var defValue ParsedAST
 			enum := &ParsedEnum{
-				Name:    label,
+				name:    label,
 				Members: []ParsedAST{},
 			}
 			nodes := []ast.Expr{ident.X, ident.Y}
@@ -190,7 +187,6 @@ func parseCueSyntax(ctx context.Context, label string, v cue.Value, syn ast.Node
 
 				v, err := astToValue(node)
 				if err != nil {
-					fmt.Printf("%#v\n\n", node)
 					return nil, fmt.Errorf("error parsing enum ast: %w", err)
 				}
 				parsed, err := parseAST(ctx, "", v)
@@ -214,7 +210,7 @@ func parseCueSyntax(ctx context.Context, label string, v cue.Value, syn ast.Node
 		return parseScalar(ctx, label, value)
 	case *ast.Ident:
 		return &ParsedIdent{
-			Name:  label,
+			name:  label,
 			Ident: ident,
 		}, nil
 	case *ast.StructLit:
@@ -233,7 +229,7 @@ func parseCueSyntax(ctx context.Context, label string, v cue.Value, syn ast.Node
 // members.
 func parseStruct(ctx context.Context, v cue.Value) (*ParsedStruct, error) {
 	parsed := &ParsedStruct{
-		Members: map[string]ParsedAST{},
+		Members: []*ParsedStructField{},
 	}
 
 	it, err := v.Fields(cue.All())
@@ -246,14 +242,14 @@ func parseStruct(ctx context.Context, v cue.Value) (*ParsedStruct, error) {
 			// We do not currently export this.
 			//
 			// XXX: Should this be included as an unexported field,
-			// eg within golang we can create a non-exported lowercase field naem?
+			// eg within golang we can create a non-exported lowercase field name?
 			continue
 		}
 
 		// Create the raw AST for each field's value
 		member, err := parseAST(ctx, it.Label(), it.Value())
 		if err == nil && member == nil {
-			// TODO: When would we create a nil member?
+			// XXX: When would we create a nil member?
 			continue
 		}
 
@@ -261,7 +257,10 @@ func parseStruct(ctx context.Context, v cue.Value) (*ParsedStruct, error) {
 			return parsed, err
 		}
 
-		parsed.Members[it.Label()] = member
+		parsed.Members = append(parsed.Members, &ParsedStructField{
+			ParsedAST: member,
+			Optional:  it.IsOptional(),
+		})
 	}
 
 	return parsed, nil
@@ -276,7 +275,7 @@ func parseArray(ctx context.Context, label string, v cue.Value) (*ParsedArray, e
 	var err error
 	parsed := &ParsedArray{}
 
-	// TODO: If this is a binary array, this is a list with a default.
+	// If this is a binary array, this is a list with a default.
 	bexpr, ok := v.Syntax(cue.All()).(*ast.BinaryExpr)
 	if ok {
 		// Y stores the UnaryExpr default, and X is the array.
@@ -334,14 +333,14 @@ func parseArray(ctx context.Context, label string, v cue.Value) (*ParsedArray, e
 // full Expr AST for a given value.
 func parseEnum(ctx context.Context, label string, v cue.Value) (*ParsedEnum, error) {
 	enum := &ParsedEnum{
-		Name:    label,
+		name:    label,
 		Members: []ParsedAST{},
 	}
 
 	_, vals := v.Expr()
 	// Generate AST representing the value of each member in the enum.
 	for _, val := range vals {
-		ast, err := parseAST(ctx, label, val)
+		ast, err := parseAST(ctx, "", val)
 		if err != nil {
 			return enum, fmt.Errorf("error generating ast for enum val: %w", err)
 		}
@@ -358,7 +357,7 @@ func parseScalar(ctx context.Context, label string, v cue.Value) (ParsedAST, err
 	if err := v.Decode(&i); err != nil {
 		return nil, err
 	}
-	return &ParsedScalar{Name: label, Value: i}, nil
+	return &ParsedScalar{name: label, Value: i}, nil
 }
 
 func parseConstraintedIdent(ctx context.Context, label string, v cue.Value) (ParsedAST, error) {

@@ -3,6 +3,7 @@ package typescript
 import (
 	"testing"
 
+	"github.com/inngest/event-schemas/events/marshalling"
 	"github.com/stretchr/testify/require"
 )
 
@@ -75,7 +76,7 @@ const isEnabled = true;`,
 						Type: strptr("number"),
 						Value: Binding{
 							Kind: BindingArray,
-							Members: []AstKind{
+							Members: []marshalling.Expr{
 								Scalar{1},
 								Scalar{2},
 								Scalar{3},
@@ -91,7 +92,7 @@ const isEnabled = true;`,
 						Name: "strings",
 						Value: Binding{
 							Kind: BindingArray,
-							Members: []AstKind{
+							Members: []marshalling.Expr{
 								Scalar{"lol"},
 								Scalar{"wut"},
 							},
@@ -112,7 +113,7 @@ const strings = ["lol", "wut"];`,
 						Name: "Contents",
 						Value: Binding{
 							Kind: BindingTypedArray,
-							Members: []AstKind{
+							Members: []marshalling.Expr{
 								Type{"string"},
 								Type{"number"},
 								Scalar{3.141},
@@ -133,7 +134,7 @@ const strings = ["lol", "wut"];`,
 						Name: "obj",
 						Value: Binding{
 							Kind: BindingObject,
-							Members: []AstKind{
+							Members: []marshalling.Expr{
 								KeyValue{
 									Key:   "name",
 									Value: Scalar{"tester mctesty"},
@@ -189,7 +190,7 @@ const myName: Name = "coder";`,
 						Name:     "User",
 						Value: Binding{
 							Kind: BindingType,
-							Members: []AstKind{
+							Members: []marshalling.Expr{
 								KeyValue{
 									Key:   "e-mail",
 									Value: Type{Value: "string"},
@@ -208,7 +209,7 @@ const myName: Name = "coder";`,
 									Value: Binding{
 										Kind:        BindingType,
 										IndentLevel: 1,
-										Members: []AstKind{
+										Members: []marshalling.Expr{
 											KeyValue{
 												Key:   "enabled",
 												Value: Type{Value: "boolean"},
@@ -237,7 +238,7 @@ const myName: Name = "coder";`,
 
 					Data: Enum{
 						Name: "Status",
-						Members: []AstKind{
+						Members: []marshalling.Expr{
 							Scalar{"push"},
 							Scalar{"pull"},
 						},
@@ -257,7 +258,7 @@ export type Status = typeof Status[keyof typeof Status];`,
 
 					Data: Enum{
 						Name: "Status",
-						Members: []AstKind{
+						Members: []marshalling.Expr{
 							Type{"string"},
 							Type{"boolean"},
 						},
@@ -273,10 +274,10 @@ export type Status = typeof Status[keyof typeof Status];`,
 
 					Data: Enum{
 						Name: "Status",
-						Members: []AstKind{
+						Members: []marshalling.Expr{
 							Binding{
 								Kind: BindingType,
-								Members: []AstKind{
+								Members: []marshalling.Expr{
 									KeyValue{
 										Key:   "name",
 										Value: Type{"string"},
@@ -285,7 +286,7 @@ export type Status = typeof Status[keyof typeof Status];`,
 							},
 							Binding{
 								Kind: BindingType,
-								Members: []AstKind{
+								Members: []marshalling.Expr{
 									KeyValue{
 										Key:   "email",
 										Value: Type{"string"},

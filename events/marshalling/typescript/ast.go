@@ -134,7 +134,7 @@ type Local struct {
 	IsExport bool
 	// Value is the value that this identifier refers to.  This could be
 	// a scalar, a type, a binding, etc.
-	Value AstKind
+	Value marshalling.Expr
 
 	// AsType records the "as T" suffix for an identifier, eg:
 	// "const Foo = 1 as int;
@@ -221,7 +221,7 @@ const (
 type Binding struct {
 	IndentLevel int
 	Kind        BindingKind
-	Members     []AstKind
+	Members     []marshalling.Expr
 }
 
 func (b Binding) String() string {
@@ -316,9 +316,8 @@ func (b Binding) String() string {
 
 // KeyValue represents a key and value within a BindingObject or Enum
 type KeyValue struct {
-	Key   string
-	Value AstKind
-
+	Key      string
+	Value    marshalling.Expr
 	Optional bool
 }
 
@@ -343,12 +342,12 @@ func (kv KeyValue) String() string {
 // creates concrete AST for enums depending on the members that it contains.
 type Enum struct {
 	Name    string
-	Members []AstKind
+	Members []marshalling.Expr
 }
 
 func (e Enum) AST() ([]marshalling.Expr, error) {
 	// Create a key/value AST mapping for each member of the enum.
-	kv := make([]AstKind, len(e.Members))
+	kv := make([]marshalling.Expr, len(e.Members))
 
 	for n, m := range e.Members {
 		switch member := m.(type) {

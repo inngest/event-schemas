@@ -30,6 +30,7 @@ Status: "open" | "closed"
 	allow: #Some & {
 		included: bool
 	}
+	anotherList: [...(int | float | string)]
 	numberList: [...(int | float)]
 	fixedNumber: [1, 2, 3.14159]
 }
