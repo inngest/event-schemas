@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 			input: `#Def: "scalar"`,
 			expected: []ParsedAST{
 				&ParsedScalar{
-					Name:  "#Def",
+					name:  "#Def",
 					Value: "scalar",
 				},
 			},
@@ -32,10 +32,8 @@ func TestParse(t *testing.T) {
 			input: `#MyVar: string`,
 			expected: []ParsedAST{
 				&ParsedIdent{
-					Name: "#MyVar",
-					Ident: &ast.Ident{
-						Name: "string",
-					},
+					name:  "#MyVar",
+					Ident: ast.NewIdent("string"),
 				},
 			},
 		},
@@ -44,10 +42,8 @@ func TestParse(t *testing.T) {
 			input: `#Def: int`,
 			expected: []ParsedAST{
 				&ParsedIdent{
-					Name: "#Def",
-					Ident: &ast.Ident{
-						Name: "int",
-					},
+					name:  "#Def",
+					Ident: ast.NewIdent("int"),
 				},
 			},
 		},
@@ -56,10 +52,8 @@ func TestParse(t *testing.T) {
 			input: `#Def: int & >= 5 & <= 10`,
 			expected: []ParsedAST{
 				&ParsedIdent{
-					Name: "#Def",
-					Ident: &ast.Ident{
-						Name: "int",
-					},
+					name:  "#Def",
+					Ident: ast.NewIdent("int"),
 				},
 			},
 		},
@@ -68,10 +62,8 @@ func TestParse(t *testing.T) {
 			input: `#Def: int & >= 5 & <= 10 | *8`,
 			expected: []ParsedAST{
 				&ParsedIdent{
-					Name: "#Def",
-					Ident: &ast.Ident{
-						Name: "int",
-					},
+					name:  "#Def",
+					Ident: ast.NewIdent("int"),
 					Default: &ParsedScalar{
 						Value: 8,
 					},
@@ -87,22 +79,18 @@ func TestParse(t *testing.T) {
 			}`,
 			expected: []ParsedAST{
 				&ParsedStruct{
-					Name: "#Person",
-					Members: map[string]*ParsedStructField{
-						"name": &ParsedStructField{
+					name: "#Person",
+					Members: []*ParsedStructField{
+						{
 							ParsedAST: &ParsedIdent{
-								Name: "name",
-								Ident: &ast.Ident{
-									Name: "string",
-								},
+								name:  "name",
+								Ident: ast.NewIdent("string"),
 							},
 						},
-						"age": &ParsedStructField{
+						{
 							ParsedAST: &ParsedIdent{
-								Name: "age",
-								Ident: &ast.Ident{
-									Name: "int",
-								},
+								name:  "age",
+								Ident: ast.NewIdent("int"),
 								Default: &ParsedScalar{
 									Value: 21,
 								},
@@ -127,44 +115,44 @@ func TestParse(t *testing.T) {
 			}`,
 			expected: []ParsedAST{
 				&ParsedStruct{
-					Name: "#Nested",
-					Members: map[string]*ParsedStructField{
-						"nested": &ParsedStructField{
+					name: "#Nested",
+					Members: []*ParsedStructField{
+						{
 							ParsedAST: &ParsedStruct{
-								Name: "nested",
-								Members: map[string]*ParsedStructField{
-									"enum": &ParsedStructField{
+								name: "nested",
+								Members: []*ParsedStructField{
+									{
 										ParsedAST: &ParsedEnum{
-											Name: "enum",
+											name: "enum",
 											Members: []ParsedAST{
 												&ParsedScalar{Value: "test"},
 												&ParsedScalar{Value: "another"},
 											},
 										},
 									},
-									"types": &ParsedStructField{
+									{
 										ParsedAST: &ParsedEnum{
-											Name: "types",
+											name: "types",
 											Members: []ParsedAST{
 												&ParsedIdent{Ident: ast.NewIdent("string")},
 												&ParsedIdent{Ident: ast.NewIdent("int")},
 											},
 										},
 									},
-									"opt": &ParsedStructField{
+									{
 										ParsedAST: &ParsedIdent{
-											Name:  "opt",
+											name:  "opt",
 											Ident: ast.NewIdent("string"),
 										},
 										Optional: true,
 									},
-									"some": &ParsedStructField{
+									{
 										ParsedAST: &ParsedStruct{
-											Name: "some",
-											Members: map[string]*ParsedStructField{
-												"item": &ParsedStructField{
+											name: "some",
+											Members: []*ParsedStructField{
+												{
 													ParsedAST: &ParsedIdent{
-														Name:  "item",
+														name:  "item",
 														Ident: ast.NewIdent("bool"),
 													},
 												},
@@ -174,9 +162,9 @@ func TestParse(t *testing.T) {
 								},
 							},
 						},
-						"title": &ParsedStructField{
+						{
 							ParsedAST: &ParsedIdent{
-								Name:  "title",
+								name:  "title",
 								Ident: ast.NewIdent("string"),
 							},
 						},
@@ -190,7 +178,7 @@ func TestParse(t *testing.T) {
 			input: `#Types: [...string | int | float64] | *[string]`,
 			expected: []ParsedAST{
 				&ParsedArray{
-					Name: "#Types",
+					name: "#Types",
 					Members: []ParsedAST{
 						&ParsedEnum{
 							Members: []ParsedAST{
@@ -209,9 +197,7 @@ func TestParse(t *testing.T) {
 					Default: &ParsedArray{
 						Members: []ParsedAST{
 							&ParsedIdent{
-								Ident: &ast.Ident{
-									Name: "string",
-								},
+								Ident: ast.NewIdent("string"),
 							},
 						},
 					},
@@ -223,7 +209,7 @@ func TestParse(t *testing.T) {
 			input: `#Idents: ["person", "dog", "cat"]`,
 			expected: []ParsedAST{
 				&ParsedArray{
-					Name: "#Idents",
+					name: "#Idents",
 					Members: []ParsedAST{
 						&ParsedScalar{
 							Value: "person",

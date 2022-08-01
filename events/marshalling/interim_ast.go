@@ -9,7 +9,9 @@ const (
 	KindEnum
 	KindStruct
 	KindArray
+	// KindIdent represents a single basic type
 	KindIdent
+	// KindScalar represents a single basic value
 	KindScalar
 )
 

@@ -3,6 +3,7 @@ package typescript
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"cuelang.org/go/cue"
 	"github.com/inngest/event-schemas/events/marshalling"
@@ -86,8 +87,24 @@ func generateEnum(ctx context.Context, e *marshalling.ParsedEnum) (marshalling.E
 	if err != nil {
 		return nil, err
 	}
+
+	var simple bool
+
+	// If the members are basic scalars, this should be marked as 'inline' if the
+	// enum is nested (eg. a struct has a field of "string" | "int", this should
+	// be inline.
+	if depth(ctx) > 1 {
+		simple = true
+		for _, m := range e.Members {
+			if m.Kind() != marshalling.KindIdent {
+				simple = false
+			}
+		}
+	}
+
 	return Enum{
-		Name:    e.Name(),
+		Name:    title(e.Name()),
+		Simple:  simple,
 		Members: members,
 	}, nil
 }
@@ -99,6 +116,7 @@ func generateStruct(ctx context.Context, s *marshalling.ParsedStruct) ([]marshal
 		Members:     []marshalling.Expr{},
 		IndentLevel: depth(ctx) - 1,
 	}
+
 	idents := []marshalling.Expr{}
 	for _, member := range s.Members {
 		// Generate the correct expresssions for this struct field.
@@ -109,10 +127,23 @@ func generateStruct(ctx context.Context, s *marshalling.ParsedStruct) ([]marshal
 			return nil, err
 		}
 		for _, field := range fields {
-			switch field.(type) {
+			switch v := field.(type) {
 			case Enum:
-				// Enums are always top-level, as are local definitions.
-				idents = append(idents, field)
+				value := field.String()
+				if !v.Simple {
+					idents = append(idents, field)
+					value = v.Name
+				}
+				// We only add this to the field if this is the
+				// member name
+				if v.Name != title(member.Name()) {
+					continue
+				}
+				binding.Members = append(binding.Members, KeyValue{
+					Key:      member.Name(),
+					Value:    Lit{Value: value},
+					Optional: member.Optional,
+				})
 			default:
 				// This is a top-level field.
 				binding.Members = append(binding.Members, KeyValue{
@@ -129,7 +160,7 @@ func generateStruct(ctx context.Context, s *marshalling.ParsedStruct) ([]marshal
 		// Wrap this in a definition.
 		exported = Local{
 			Name:     s.Name(),
-			Kind:     LocalType,
+			Kind:     LocalInterface,
 			Value:    binding,
 			IsExport: true,
 		}
@@ -151,20 +182,42 @@ func generateArray(ctx context.Context, s *marshalling.ParsedArray) ([]marshalli
 
 	idents := []marshalling.Expr{}
 
+	// Arrays aren't automatically deeply nested.  Remove the depth.
+	// @TODO: Remove this hack;  depth is both how deep we are within walking a nested type
+	// and also how indented we are.
+	level := depth(ctx) - 1
+	nestedCtx := context.WithValue(ctx, ctxDepth, level)
+
 	for _, member := range s.Members {
 		// For each member, generate an expression.
-		fields, err := GenerateExprs(ctx, []marshalling.ParsedAST{member})
+		fields, err := GenerateExprs(nestedCtx, []marshalling.ParsedAST{member})
 		if err != nil {
 			return nil, err
 		}
-		for _, field := range fields {
-			switch field.(type) {
-			case Enum, Local:
-				// Enums are always top-level, as are local definitions.
+		for n, field := range fields {
+			// We only want the last field to be added to the array;  any
+			// fields prior to the last are top-level exports.
+			if n < len(fields)-1 {
 				idents = append(idents, field)
-				binding.Members = append(binding.Members, Lit{member.Name()})
+				continue
+			}
+
+			switch v := field.(type) {
+			case Enum:
+				if v.Simple {
+					// A simple enum is inline.
+					binding.Members = append(binding.Members, field)
+					continue
+				}
+				// Non-simple enums are top-level.
+				idents = append(idents, field)
+				binding.Members = append(binding.Members, Lit{v.Name})
+			case Local:
+				// Local defs are always top-level
+				idents = append(idents, field)
+				binding.Members = append(binding.Members, Lit{v.Name})
 			default:
-				// This is a top-level field.
+				// This is a mmeber of the array
 				binding.Members = append(binding.Members, field)
 			}
 		}
@@ -199,6 +252,11 @@ func identToTS(name string) string {
 	default:
 		return name
 	}
+}
+
+func title(s string) string {
+	s = strings.ReplaceAll(s, "#", "")
+	return strings.Title(s)
 }
 
 // indentLevel returns the current indent level from the context.  This is

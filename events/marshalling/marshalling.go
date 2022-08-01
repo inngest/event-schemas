@@ -30,7 +30,6 @@ func Marshal(ctx context.Context, v cue.Value, g Generator) (string, error) {
 		return "", err
 	}
 
-	fmt.Println(Format(exprs...))
 	return Format(exprs...)
 }
 

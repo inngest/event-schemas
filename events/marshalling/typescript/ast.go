@@ -48,7 +48,11 @@ func (e Expr) String() string {
 		return e.Data.String()
 	}
 	// This is code;  always add a semicolon after each expression
-	return e.Data.String() + ";"
+	str := e.Data.String()
+	if strings.HasSuffix(str, ";") {
+		return str
+	}
+	return str + ";"
 }
 
 // ASTKind is a generalization of all elements in our AST
@@ -163,7 +167,7 @@ func (l Local) String() string {
 	}
 
 	if l.IsExport {
-		return fmt.Sprintf("export %s", def)
+		return fmt.Sprintf("export %s;", def)
 	}
 
 	return def
@@ -342,12 +346,23 @@ func (kv KeyValue) String() string {
 // creates concrete AST for enums depending on the members that it contains.
 type Enum struct {
 	Name    string
+	Simple  bool
 	Members []marshalling.Expr
 }
 
 func (e Enum) AST() ([]marshalling.Expr, error) {
 	// Create a key/value AST mapping for each member of the enum.
 	kv := make([]marshalling.Expr, len(e.Members))
+
+	if e.Simple {
+		// This is a simple union, with no local consts.
+		return []marshalling.Expr{
+			Binding{
+				Kind:    BindingDisjunction,
+				Members: e.Members,
+			},
+		}, nil
+	}
 
 	for n, m := range e.Members {
 		switch member := m.(type) {
@@ -413,5 +428,9 @@ func (e Enum) String() string {
 	for _, item := range ast {
 		str.WriteString(item.String())
 	}
-	return strings.TrimSuffix(str.String(), ";")
+
+	if e.Simple {
+		return strings.TrimSuffix(str.String(), ";")
+	}
+	return str.String()
 }

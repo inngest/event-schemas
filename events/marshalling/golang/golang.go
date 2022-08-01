@@ -3,7 +3,6 @@ package golang
 import (
 	"context"
 	"fmt"
-	"go/ast"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/ast"
