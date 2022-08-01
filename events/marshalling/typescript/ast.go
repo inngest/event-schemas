@@ -352,22 +352,35 @@ type Enum struct {
 
 func (e Enum) AST() ([]marshalling.Expr, error) {
 	// Create a key/value AST mapping for each member of the enum.
-	kv := make([]marshalling.Expr, len(e.Members))
+	//
+	// This allows us to dedupe values in the enum (eg. cue's int / float types
+	// are just 'number';  we only want this printed once).
+	kv := map[string]marshalling.Expr{}
+	members := []marshalling.Expr{}
+
+	for _, m := range e.Members {
+		str := m.String()
+		if _, ok := kv[str]; !ok {
+			kv[str] = m
+			members = append(members, m)
+		}
+	}
 
 	if e.Simple {
 		// This is a simple union, with no local consts.
 		return []marshalling.Expr{
 			Binding{
 				Kind:    BindingDisjunction,
-				Members: e.Members,
+				Members: members,
 			},
 		}, nil
 	}
 
-	for n, m := range e.Members {
+	scalars := make([]marshalling.Expr, len(members))
+	for n, m := range members {
 		switch member := m.(type) {
 		case Scalar:
-			kv[n] = KeyValue{
+			scalars[n] = KeyValue{
 				Key:   strings.ToUpper(member.Unquoted()),
 				Value: member,
 			}
@@ -382,7 +395,7 @@ func (e Enum) AST() ([]marshalling.Expr, error) {
 						Value: Binding{
 							Kind: BindingDisjunction,
 							// Add all members of the enum as an object.
-							Members: e.Members,
+							Members: members,
 						},
 					},
 				},
@@ -401,7 +414,7 @@ func (e Enum) AST() ([]marshalling.Expr, error) {
 				Value: Binding{
 					Kind: BindingObject,
 					// Add all members of the enum as an object.
-					Members: kv,
+					Members: scalars,
 				},
 			},
 		},

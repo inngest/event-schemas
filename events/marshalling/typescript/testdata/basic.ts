@@ -47,7 +47,7 @@ export interface Event {
     with: string;
     included: boolean;
   };
-  anotherList: Array<number | number | string>;
-  numberList: Array<number | number>;
+  anotherList: Array<number | string>;
+  numberList: Array<number>;
   fixedNumber: Array<1 | 2 | 3.14159>;
 };
