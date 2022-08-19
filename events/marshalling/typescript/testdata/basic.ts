@@ -15,8 +15,6 @@ export const Action = {
 } as const;
 export type Action = typeof Action[keyof typeof Action];
 
-export type Mixed = string | number;
-
 export const Heyy = {
   WHAT: "what",
   DO: "do",
@@ -35,7 +33,7 @@ export interface Event {
     staticBool?: true;
     enabled: boolean;
     numeric: number;
-    mixed: Mixed;
+    mixed: string | number;
     friends: Array<{
       id: number;
       name: string;
@@ -49,6 +47,7 @@ export interface Event {
     with: string;
     included: boolean;
   };
+  anotherList: Array<number | string>;
   numberList: Array<number>;
   fixedNumber: Array<1 | 2 | 3.14159>;
 };

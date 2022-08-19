@@ -27,7 +27,7 @@ func TestTypescriptGeneration(t *testing.T) {
 		require.NoError(t, err)
 
 		actual, err := MarshalString(string(contents))
-		require.EqualValues(t, string(expected), actual)
+		require.EqualValues(t, strings.TrimSpace(string(expected)), actual)
 		require.NoError(t, err)
 	}
 

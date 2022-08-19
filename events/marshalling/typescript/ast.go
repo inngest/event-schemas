@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/inngest/event-schemas/events/marshalling"
 )
 
 const (
@@ -46,7 +48,11 @@ func (e Expr) String() string {
 		return e.Data.String()
 	}
 	// This is code;  always add a semicolon after each expression
-	return e.Data.String() + ";"
+	str := e.Data.String()
+	if strings.HasSuffix(str, ";") {
+		return str
+	}
+	return str + ";"
 }
 
 // ASTKind is a generalization of all elements in our AST
@@ -132,7 +138,7 @@ type Local struct {
 	IsExport bool
 	// Value is the value that this identifier refers to.  This could be
 	// a scalar, a type, a binding, etc.
-	Value AstKind
+	Value marshalling.Expr
 
 	// AsType records the "as T" suffix for an identifier, eg:
 	// "const Foo = 1 as int;
@@ -161,7 +167,7 @@ func (l Local) String() string {
 	}
 
 	if l.IsExport {
-		return fmt.Sprintf("export %s", def)
+		return fmt.Sprintf("export %s;", def)
 	}
 
 	return def
@@ -219,7 +225,7 @@ const (
 type Binding struct {
 	IndentLevel int
 	Kind        BindingKind
-	Members     []AstKind
+	Members     []marshalling.Expr
 }
 
 func (b Binding) String() string {
@@ -314,9 +320,8 @@ func (b Binding) String() string {
 
 // KeyValue represents a key and value within a BindingObject or Enum
 type KeyValue struct {
-	Key   string
-	Value AstKind
-
+	Key      string
+	Value    marshalling.Expr
 	Optional bool
 }
 
@@ -341,24 +346,48 @@ func (kv KeyValue) String() string {
 // creates concrete AST for enums depending on the members that it contains.
 type Enum struct {
 	Name    string
-	Members []AstKind
+	Simple  bool
+	Members []marshalling.Expr
 }
 
-func (e Enum) AST() ([]*Expr, error) {
+func (e Enum) AST() ([]marshalling.Expr, error) {
 	// Create a key/value AST mapping for each member of the enum.
-	kv := make([]AstKind, len(e.Members))
+	//
+	// This allows us to dedupe values in the enum (eg. cue's int / float types
+	// are just 'number';  we only want this printed once).
+	kv := map[string]marshalling.Expr{}
+	members := []marshalling.Expr{}
 
-	for n, m := range e.Members {
+	for _, m := range e.Members {
+		str := m.String()
+		if _, ok := kv[str]; !ok {
+			kv[str] = m
+			members = append(members, m)
+		}
+	}
+
+	if e.Simple {
+		// This is a simple union, with no local consts.
+		return []marshalling.Expr{
+			Binding{
+				Kind:    BindingDisjunction,
+				Members: members,
+			},
+		}, nil
+	}
+
+	scalars := make([]marshalling.Expr, len(members))
+	for n, m := range members {
 		switch member := m.(type) {
 		case Scalar:
-			kv[n] = KeyValue{
+			scalars[n] = KeyValue{
 				Key:   strings.ToUpper(member.Unquoted()),
 				Value: member,
 			}
 		default:
 			// Immediately return a disjunction of complex types.
-			return []*Expr{
-				{
+			return []marshalling.Expr{
+				&Expr{
 					Data: Local{
 						Kind:     LocalType,
 						Name:     e.Name,
@@ -366,7 +395,7 @@ func (e Enum) AST() ([]*Expr, error) {
 						Value: Binding{
 							Kind: BindingDisjunction,
 							// Add all members of the enum as an object.
-							Members: e.Members,
+							Members: members,
 						},
 					},
 				},
@@ -375,8 +404,8 @@ func (e Enum) AST() ([]*Expr, error) {
 
 	}
 
-	return []*Expr{
-		{
+	return []marshalling.Expr{
+		&Expr{
 			Data: Local{
 				Kind:     LocalConst,
 				Name:     e.Name,
@@ -385,12 +414,12 @@ func (e Enum) AST() ([]*Expr, error) {
 				Value: Binding{
 					Kind: BindingObject,
 					// Add all members of the enum as an object.
-					Members: kv,
+					Members: scalars,
 				},
 			},
 		},
-		{Data: Lit{Value: "\n"}},
-		{
+		&Expr{Data: Lit{Value: "\n"}},
+		&Expr{
 			Data: Local{
 				Kind:     LocalType,
 				Name:     e.Name,
@@ -412,5 +441,9 @@ func (e Enum) String() string {
 	for _, item := range ast {
 		str.WriteString(item.String())
 	}
-	return strings.TrimSuffix(str.String(), ";")
+
+	if e.Simple {
+		return strings.TrimSuffix(str.String(), ";")
+	}
+	return str.String()
 }
