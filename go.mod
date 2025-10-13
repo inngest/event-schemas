@@ -2,8 +2,10 @@ module github.com/inngest/event-schemas
 
 go 1.17
 
+replace cuelang.org/go => github.com/inngest/cue v0.4.3
+
 require (
-	cuelang.org/go v0.4.2
+	cuelang.org/go v0.4.3
 	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/google/uuid v1.2.0
 	github.com/inngest/cuetypescript v0.0.0-20220302153725-a00e933fdf87
