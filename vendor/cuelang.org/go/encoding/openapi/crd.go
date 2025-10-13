@@ -52,6 +52,8 @@ import (
 func newCoreBuilder(c *buildContext) *builder {
 	b := newRootBuilder(c)
 	b.properties = map[string]*builder{}
+	b.ctx.evalDepth += 1
+
 	return b
 }
 

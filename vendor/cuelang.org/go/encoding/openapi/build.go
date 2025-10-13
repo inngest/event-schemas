@@ -227,6 +227,11 @@ func (b *builder) schema(core *builder, name string, v cue.Value) *ast.StructLit
 		c.core = core
 	}
 
+	if c.ctx.evalDepth > 1_000 {
+		// Do not bother.
+		b.failf(v, "openapi eval depth is greater than max")
+	}
+
 	return c.fillSchema(v)
 }
 
