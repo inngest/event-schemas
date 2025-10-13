@@ -44,7 +44,6 @@ type buildContext struct {
 	nameFunc      func(inst *cue.Instance, path []string) string
 	descFunc      func(v cue.Value) string
 	fieldFilter   *regexp.Regexp
-	evalDepth     int // detect cycles when resolving references
 
 	schemas *OrderedMap
 
@@ -181,7 +180,7 @@ func schemas(g *Generator, inst *cue.Instance) (schemas *ast.StructLit, err erro
 }
 
 func (c *buildContext) build(name string, v cue.Value) *ast.StructLit {
-	return newCoreBuilder(c).schema(nil, name, v)
+	return newCoreBuilder(c, 0).schema(nil, name, v)
 }
 
 // isInternal reports whether or not to include this type.
@@ -219,15 +218,15 @@ func (b *builder) schema(core *builder, name string, v cue.Value) *ast.StructLit
 
 	var c *builder
 	if core == nil && b.ctx.structural {
-		c = newCoreBuilder(b.ctx)
+		c = newCoreBuilder(b.ctx, b.evalDepth)
 		c.buildCore(v) // initialize core structure
 		c.coreSchema()
 	} else {
-		c = newRootBuilder(b.ctx)
+		c = newRootBuilder(b.ctx, b.evalDepth)
 		c.core = core
 	}
 
-	if c.ctx.evalDepth > 1_000 {
+	if c.evalDepth > 1_000 {
 		// Do not bother.
 		b.failf(v, "openapi eval depth is greater than max")
 	}
@@ -1115,10 +1114,12 @@ type builder struct {
 	keys       []string
 	properties map[string]*builder
 	items      *builder
+
+	evalDepth int // detect cycles when resolving references
 }
 
-func newRootBuilder(c *buildContext) *builder {
-	return &builder{ctx: c}
+func newRootBuilder(c *buildContext, depth int) *builder {
+	return &builder{ctx: c, evalDepth: depth + 1}
 }
 
 func newOASBuilder(parent *builder) *builder {

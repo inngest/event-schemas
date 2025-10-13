@@ -49,11 +49,9 @@ import (
 )
 
 // newCoreBuilder returns a builder that represents a structural schema.
-func newCoreBuilder(c *buildContext) *builder {
-	b := newRootBuilder(c)
+func newCoreBuilder(c *buildContext, depth int) *builder {
+	b := newRootBuilder(c, depth)
 	b.properties = map[string]*builder{}
-	b.ctx.evalDepth += 1
-
 	return b
 }
 
@@ -135,7 +133,7 @@ func (b *builder) buildCore(v cue.Value) {
 					return
 				}
 				if b.items == nil {
-					b.items = newCoreBuilder(b.ctx)
+					b.items = newCoreBuilder(b.ctx, b.evalDepth)
 				}
 				b.items.buildCore(typ)
 			}
@@ -147,7 +145,7 @@ func (b *builder) buildCore(v cue.Value) {
 					return
 				}
 				if b.items == nil {
-					b.items = newCoreBuilder(b.ctx)
+					b.items = newCoreBuilder(b.ctx, b.evalDepth)
 				}
 				b.items.buildCore(typ)
 			}
@@ -174,7 +172,7 @@ func (b *builder) buildCoreStruct(v cue.Value) {
 		label := i.Label()
 		sub, ok := b.properties[label]
 		if !ok {
-			sub = newCoreBuilder(b.ctx)
+			sub = newCoreBuilder(b.ctx, b.evalDepth)
 			b.properties[label] = sub
 			b.keys = append(b.keys, label)
 		}
