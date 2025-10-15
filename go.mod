@@ -2,7 +2,7 @@ module github.com/inngest/event-schemas
 
 go 1.17
 
-replace cuelang.org/go => github.com/inngest/cue v0.4.5
+replace cuelang.org/go => github.com/inngest/cue v0.4.6
 
 require (
 	cuelang.org/go v0.4.5

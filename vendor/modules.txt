@@ -1,4 +1,4 @@
-# cuelang.org/go v0.4.5 => github.com/inngest/cue v0.4.5
+# cuelang.org/go v0.4.5 => github.com/inngest/cue v0.4.6
 ## explicit; go 1.13
 cuelang.org/go/cue
 cuelang.org/go/cue/ast
@@ -144,4 +144,4 @@ golang.org/x/xerrors/internal
 # gopkg.in/yaml.v3 v3.0.0
 ## explicit
 gopkg.in/yaml.v3
-# cuelang.org/go => github.com/inngest/cue v0.4.5
+# cuelang.org/go => github.com/inngest/cue v0.4.6

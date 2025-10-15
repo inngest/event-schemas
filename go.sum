@@ -58,8 +58,8 @@ github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgf
 github.com/grpc-ecosystem/grpc-gateway v1.9.0/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/inngest/cue v0.4.5 h1:SuD69WPc95HLL7jivMdNkYuHmcBvylxtWRNLFXCgFx4=
-github.com/inngest/cue v0.4.5/go.mod h1:P09/R4UfAEzLkV9DXxwlxQnIZbkaT4uIhiEgs6Vsz2Q=
+github.com/inngest/cue v0.4.6 h1:gAGl5XzMGJ5yZh1ZK9Bu/9oBo65/l+OqcETHwnJcPuA=
+github.com/inngest/cue v0.4.6/go.mod h1:P09/R4UfAEzLkV9DXxwlxQnIZbkaT4uIhiEgs6Vsz2Q=
 github.com/inngest/cuetypescript v0.0.0-20220302153725-a00e933fdf87 h1:ZNGiPCVk0VbQ5TXjkaFS9iaxcCoJG0+nYFnPJ7BhwMI=
 github.com/inngest/cuetypescript v0.0.0-20220302153725-a00e933fdf87/go.mod h1:z9T6/U4kdwf++EnQvcTWBJ0kX3rFfE7IG/sf30Hn82A=
 github.com/inngest/golorem v0.0.0-20220323014825-15bf7a53bf79 h1:Z5wDJxZTie5JaOcNZ5gcJLu3dpd/rZ1UWeJyKBhgCHg=
